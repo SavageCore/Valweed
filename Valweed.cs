@@ -1,13 +1,13 @@
-ï»¿// File:    Valweed.cs
+// File:    Valweed.cs
 // Project: Valweed
 using BepInEx;
-using UnityEngine;
 using BepInEx.Configuration;
-using Jotunn.Utils;
+using Jotunn.Configs;
 using Jotunn.Entities;
 using Jotunn.Managers;
-using Jotunn.Configs;
+using Jotunn.Utils;
 using System.Reflection;
+using UnityEngine;
 
 namespace Valweed
 {
@@ -18,11 +18,36 @@ namespace Valweed
     {
         public const string PluginGUID = "com.drod917.Valweed";
         public const string PluginName = "Valweed";
-        public const string PluginVersion = "0.0.5.1";
+        public const string PluginVersion = "0.0.6";
 
-        // 0051 updates
-        // Indica joint typo fix
-        // Fix plant biome placement fix (only used to work in Meadows)
+        // 006 updates
+        // Vanishing grown plant bugfix
+        /*
+         These are the terms in need of translation:
+Weed Seeds
+Seed-Weed Plant
+Seeds of the marijuana plant.
+Plant this to grow some weed.
+Plant this to grow some seedy weed.
+Joint Paper
+Use these to roll up a joint.
+Some very strinky bud.
+Joint (Hybrid)
+Joint (Indica)
+Joint (Sativa)
+Smoke a fat doobie.
+You feel high.
+You're coming down.
+Languages Still in Need of Translation
+
+    Polish
+    Russian
+    Turkish
+    Dutch
+    Simplified Chinese
+    Japanese
+    Brazilian Portugese
+        */
         // TODO: Place bong
 
         private AssetBundle jointResourceBundle;
@@ -34,6 +59,8 @@ namespace Valweed
         private GameObject sativaJointPrefab;
         private GameObject weedSaplingPrefab;
         private GameObject weedSeedSaplingPrefab;
+        private GameObject pickableWeedPrefab;
+        private GameObject pickableSeedWeedPrefab;
         private GameObject weedNugsPrefab;
         private GameObject weedSeedsPrefab;
         private GameObject weedPaperPrefab;
@@ -66,8 +93,8 @@ namespace Valweed
             LoadAssets();
             AddLocalizations();
             AddStatusEffects();
-            CreateBlueprintRune();
-            CreateRunePieces();
+            CreateItems();
+            CreatePieces();
         }
 
         private void Update()
@@ -78,15 +105,21 @@ namespace Valweed
         {
             //Load embedded resources
             //Jotunn.Logger.LogInfo($"Embedded resources: {string.Join(",", Assembly.GetExecutingAssembly().GetManifestResourceNames())}");
+            // Joint stuff
             jointResourceBundle = AssetUtils.LoadAssetBundleFromResources("joint", Assembly.GetExecutingAssembly());
             hybridJointPrefab = jointResourceBundle.LoadAsset<GameObject>("Assets/Joint/Joint_hybrid.prefab");
             indicaJointPrefab = jointResourceBundle.LoadAsset<GameObject>("Assets/Joint/Joint_indica.prefab");
             sativaJointPrefab = jointResourceBundle.LoadAsset<GameObject>("Assets/Joint/Joint_sativa.prefab");
             weedPaperPrefab = jointResourceBundle.LoadAsset<GameObject>("Assets/Joint/Joint_paper.prefab");
 
+            // Growable stuff
             plantResourceBundle = AssetUtils.LoadAssetBundleFromResources("plant", Assembly.GetExecutingAssembly());
             weedSaplingPrefab = plantResourceBundle.LoadAsset<GameObject>("Assets/Plant/Seed/sapling_weed.prefab");
-            weedSeedSaplingPrefab = plantResourceBundle.LoadAsset<GameObject>("Assets/Plant/Seed/sapling_weed_seeds.prefab");
+            weedSeedSaplingPrefab = plantResourceBundle.LoadAsset<GameObject>("Assets/Plant/Seed/sapling_seedweed.prefab");
+            pickableWeedPrefab = plantResourceBundle.LoadAsset<GameObject>("Assets/Plant/flower/Pickable_WeedPlant.prefab");
+            pickableSeedWeedPrefab = plantResourceBundle.LoadAsset<GameObject>("Assets/Plant/flower/Pickable_SeedWeedPlant.prefab");
+
+            // ItemDrop stuff
             weedNugsPrefab = plantResourceBundle.LoadAsset<GameObject>("Assets/Plant/Seed/weed_buds.prefab");
             weedSeedsPrefab = plantResourceBundle.LoadAsset<GameObject>("Assets/Plant/Seed/weed_seeds.prefab");
 
@@ -151,7 +184,7 @@ namespace Valweed
                     {"hybrid_joint_effectname", "High (Hybrid)"},
                     {"indica_joint_effectname", "High (Indica)"},
                     {"sativa_joint_effectname", "High (Sativa)"},
-                    {"joint_effectstart", "Du fÃ¼hlst dich hoch."},
+                    {"joint_effectstart", "Du fühlst dich hoch."},
                     {"joint_effectstop", "Du kommst runter."}
                 }
             });
@@ -198,11 +231,11 @@ namespace Valweed
                     {"piece_sapling_weed_desc", "Plant this to grow some weed."},
                     {"item_joint_paper", "Joint Paper" },
                     {"item_joint_paper_desc", "Use these to roll up a joint."}, //TODO
-                    {"item_hybrid_joint", "PÃ©tard (Hybrid)"},
+                    {"item_hybrid_joint", "Pétard (Hybrid)"},
                     {"item_hybrid_joint_desc", "Fumer un gros doobie."},
-                    {"item_indica_joint", "PÃ©tard (Indica)"},
+                    {"item_indica_joint", "Pétard (Indica)"},
                     {"item_indica_joint_desc", "Fumer un gros doobie."},
-                    {"item_sativa_joint", "PÃ©tard (Sativa)"},
+                    {"item_sativa_joint", "Pétard (Sativa)"},
                     {"item_sativa_joint_desc", "Fumer un gros doobie."},
                     {"hybrid_joint_effectname", "High (Hybrid)"},
                     {"indica_joint_effectname", "High (Indica)"},
@@ -236,7 +269,7 @@ namespace Valweed
                     {"indica_joint_effectname", "High (Indica)"},
                     {"sativa_joint_effectname", "High (Sativa)"},
                     {"joint_effectstart", "Te sientes alto."},
-                    {"joint_effectstop", "Te estÃ¡s volviendo sobrio."}
+                    {"joint_effectstop", "Te estás volviendo sobrio."}
                 }
             });
 
@@ -252,19 +285,19 @@ namespace Valweed
                     {"piece_sapling_weed_seeds_desc", "Plant this to grow some seedy weed."},
                     {"piece_sapling_weed", "Weed Plant"},
                     {"piece_sapling_weed_desc", "Plant this to grow some weed."},
-                    {"item_joint_paper", "Joint Paper" },
+                    {"item_joint_paper", "Blant Paper" },
                     {"item_joint_paper_desc", "Use these to roll up a joint."}, //TODO
-                    {"item_hybrid_joint", "Joint (Hybrid)"},
-                    {"item_hybrid_joint_desc", "Smoke a fat doobie."},
-                    {"item_indica_joint", "Joint (Indica)"},
-                    {"item_indica_joint_desc", "Smoke a fat doobie."},
-                    {"item_sativa_joint", "Joint (Sativa)"},
-                    {"item_sativa_joint_desc", "Smoke a fat doobie."},
+                    {"item_hybrid_joint", "Blant (Mieszany)"},
+                    {"item_hybrid_joint_desc", "Zapal grubego lolka."},
+                    {"item_indica_joint", "Blant (Indica)"},
+                    {"item_indica_joint_desc", "Zapal grubego lolka."},
+                    {"item_sativa_joint", "Blant (Sativa)"},
+                    {"item_sativa_joint_desc", "Zapal grubego lolka."},
                     {"hybrid_joint_effectname", "High (Hybrid)"},
                     {"indica_joint_effectname", "High (Indica)"},
                     {"sativa_joint_effectname", "High (Sativa)"},
-                    {"joint_effectstart", "You feel high."},
-                    {"joint_effectstop", "You're coming down."}
+                    {"joint_effectstart", "Czujesz sie zjarany."},
+                    {"joint_effectstop", "Uspokajasz sie."}
                 }
             });
 
@@ -466,9 +499,9 @@ namespace Valweed
             ItemManager.Instance.AddStatusEffect(sativaJointEffect);
         }
 
-        private void CreateBlueprintRune()
+        private void CreateItems()
         {
-            CustomItem hj_rune = new CustomItem(hybridJointPrefab, fixReference: false,
+            CustomItem hybridJoint = new CustomItem(hybridJointPrefab, fixReference: false,
                 new ItemConfig
                 {
                     Amount = 1,
@@ -479,11 +512,11 @@ namespace Valweed
                         new RequirementConfig { Item = "Raspberry", Amount = 1 }
                     }
                 });
-            hj_rune.ItemDrop.m_itemData.m_shared.m_itemType = ItemDrop.ItemData.ItemType.Consumable;
-            hj_rune.ItemDrop.m_itemData.m_shared.m_consumeStatusEffect = hybridJointEffect.StatusEffect;
-            ItemManager.Instance.AddItem(hj_rune);
+            hybridJoint.ItemDrop.m_itemData.m_shared.m_itemType = ItemDrop.ItemData.ItemType.Consumable;
+            hybridJoint.ItemDrop.m_itemData.m_shared.m_consumeStatusEffect = hybridJointEffect.StatusEffect;
+            ItemManager.Instance.AddItem(hybridJoint);
 
-            CustomItem ij_rune = new CustomItem(indicaJointPrefab, fixReference: false,
+            CustomItem indicaJoint = new CustomItem(indicaJointPrefab, fixReference: false,
                 new ItemConfig
                 {
                     Amount = 1,
@@ -494,12 +527,12 @@ namespace Valweed
                         new RequirementConfig { Item = "Blueberries", Amount = 1 }
                     }
                 });
-            ij_rune.ItemDrop.m_itemData.m_shared.m_itemType = ItemDrop.ItemData.ItemType.Consumable;
-            ij_rune.ItemDrop.m_itemData.m_shared.m_consumeStatusEffect = indicaJointEffect.StatusEffect;
-            ij_rune.ItemPrefab = indicaJointPrefab;
-            ItemManager.Instance.AddItem(ij_rune);
+            indicaJoint.ItemDrop.m_itemData.m_shared.m_itemType = ItemDrop.ItemData.ItemType.Consumable;
+            indicaJoint.ItemDrop.m_itemData.m_shared.m_consumeStatusEffect = indicaJointEffect.StatusEffect;
+            indicaJoint.ItemPrefab = indicaJointPrefab;
+            ItemManager.Instance.AddItem(indicaJoint);
 
-            CustomItem sj_rune = new CustomItem(sativaJointPrefab, fixReference: false,
+            CustomItem sativaJoint = new CustomItem(sativaJointPrefab, fixReference: false,
                 new ItemConfig
                 {
                     Amount = 1,
@@ -510,10 +543,10 @@ namespace Valweed
                         new RequirementConfig { Item = "Honey", Amount = 1 }
                     }
                 });
-            sj_rune.ItemDrop.m_itemData.m_shared.m_itemType = ItemDrop.ItemData.ItemType.Consumable;
-            sj_rune.ItemDrop.m_itemData.m_shared.m_consumeStatusEffect = sativaJointEffect.StatusEffect;
-            sj_rune.ItemPrefab = sativaJointPrefab;
-            ItemManager.Instance.AddItem(sj_rune);
+            sativaJoint.ItemDrop.m_itemData.m_shared.m_itemType = ItemDrop.ItemData.ItemType.Consumable;
+            sativaJoint.ItemDrop.m_itemData.m_shared.m_consumeStatusEffect = sativaJointEffect.StatusEffect;
+            sativaJoint.ItemPrefab = sativaJointPrefab;
+            ItemManager.Instance.AddItem(sativaJoint);
 
             CustomItem weed_papers = new CustomItem(weedPaperPrefab, fixReference: false,
                 new ItemConfig
@@ -542,7 +575,7 @@ namespace Valweed
             ItemManager.Instance.AddItem(weed_seeds);
         }
 
-        private void CreateRunePieces()
+        private void CreatePieces()
         {
             CustomPiece weedPlant = new CustomPiece(weedSaplingPrefab,
                 new PieceConfig
@@ -553,6 +586,7 @@ namespace Valweed
                         new RequirementConfig { Item = "weed_seeds", Amount = 1 }
                     }
                 });
+            PrefabManager.Instance.AddPrefab(pickableWeedPrefab);
             PieceManager.Instance.AddPiece(weedPlant);
 
             CustomPiece weedSeedPlant = new CustomPiece(weedSeedSaplingPrefab,
@@ -564,6 +598,7 @@ namespace Valweed
                         new RequirementConfig { Item = "weed_buds", Amount = 1 }
                     }
                 });
+            PrefabManager.Instance.AddPrefab(pickableSeedWeedPrefab);
             PieceManager.Instance.AddPiece(weedSeedPlant);
 
             //CustomPiece bong = new CustomPiece(bongPrefab,
