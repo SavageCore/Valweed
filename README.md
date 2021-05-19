@@ -1,5 +1,43 @@
 Grow your own weed farm! Roll up joints for smoke-able buffs! 
 
+0.2.0
+-----
+
+Placeable Bong added! Fill the bowl with your weed buds and get ZOOTED.
+
+	Ingredients:
+	Bronze Nails 5x
+	Resin 10x
+	Skeleton Trophy 1x
+	Greydwarf Eye 5x
+
+	The bong effect is a combination of all 3 joint effects.
+	It also lasts 3x the joint effect time. You can refresh it by smoking more, but the rested time wont be added to
+	until the original time that the bong added has elapsed.
+
+Weed Nugs are now placeable.
+
+Thank you Gravebear for the 3D model! Check out his mods at https://valheim.thunderstore.io/package/OdinPlus/ (He has a BongLantern :)
+Thank you Zarboz for helping a lot with various issues throughout the life of this mod. Check out his mods at https://valheim.thunderstore.io/package/sbtoonz/
+
+Bong sounds from Zapsplat.com
+
+
+
+0.1.1
+-----
+Reorganized folder structure to meet Thunderstore standards... ffs
+
+
+
+0.1.0
+-----
+Fixed the lack of sounds when planting / harvesting.
+Customizable localizations added. This makes it easier, and quicker, for you to add your own translations.
+	To add a custom translation, modify the Translations/{Your language}/{language}.json or create your own.
+
+
+
 0.0.6
 -------
 Fixed an issue where fully grown plants would despawn when either logging out, or traveling far away.
