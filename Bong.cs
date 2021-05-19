@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Bong : MonoBehaviour, Hoverable, Interactable
@@ -42,6 +43,8 @@ public class Bong : MonoBehaviour, Hoverable, Interactable
 	public int m_fireworkItems = 2;
 
 	public GameObject m_fireworks;
+
+	public float ttl;
 
 	private bool m_blocked;
 
@@ -207,6 +210,7 @@ public class Bong : MonoBehaviour, Hoverable, Interactable
 		Inventory inventory = user.GetInventory();
 		if (inventory != null)
 		{
+			// Player has buds, bong is empty
 			if (inventory.HaveItem(m_fuelItem.m_itemData.m_shared.m_name))
 			{
 				if ((float)Mathf.CeilToInt(m_nview.GetZDO().GetFloat("fuel")) >= m_maxFuel)
@@ -222,11 +226,64 @@ public class Bong : MonoBehaviour, Hoverable, Interactable
                         @float = 0f;
                     }
                     m_nview.GetZDO().Set("fuel", @float);
-                    return true;
+
+					// Rested Management
+					Player player = user as Player;
+					List<StatusEffect> statlist = player.GetSEMan().m_statusEffects;
+					bool isRested = false;
+					for (int i = 0; i < statlist.Count; i++)
+					{
+						if (statlist[i].GetType() == typeof(SE_Rested))
+						{
+                            // Set the current rested max time to (max time - time elapsed + 5m) and reset timer
+                            statlist[i].m_ttl = (statlist[i].m_ttl - statlist[i].m_time) + ttl;
+                            statlist[i].m_time = 0;
+                            isRested = true;
+
+                            break;
+						}
+					}
+					if (!isRested)
+						player.m_seman.AddStatusEffect("Rested", true);
+					return true;
 				}
 				user.Message(MessageHud.MessageType.Center, Localization.instance.Localize("$bong_addbud", m_fuelItem.m_itemData.m_shared.m_name));
 				inventory.RemoveItem(m_fuelItem.m_itemData.m_shared.m_name, 1);
 				m_nview.InvokeRPC("AddFuel");
+				return true;
+			}
+			// Player doesn't have any more buds, but the bong is filled
+			else if ((float)Mathf.CeilToInt(m_nview.GetZDO().GetFloat("fuel")) >= m_maxFuel)
+            {
+				user.Message(MessageHud.MessageType.Center, Localization.instance.Localize("$bong_effectstart", m_fuelItem.m_itemData.m_shared.m_name));
+				user.m_seman.AddStatusEffect("BongStatusEffect", true);
+				// play bong sound
+				m_fuelAddedEffects.Create(base.transform.position, base.transform.rotation);
+				float @float = m_nview.GetZDO().GetFloat("fuel");
+				@float -= 1;
+				if (@float <= 0f)
+				{
+					@float = 0f;
+				}
+				m_nview.GetZDO().Set("fuel", @float);
+
+				// Rested Management
+				Player player = user as Player;
+				List<StatusEffect> statlist = player.GetSEMan().m_statusEffects;
+				bool isRested = false;
+				for (int i = 0; i < statlist.Count; i++)
+				{
+					if (statlist[i].GetType() == typeof(SE_Rested))
+					{
+						// Set the current rested max time to (max time - time elapsed + 10m) and reset timer
+						statlist[i].m_ttl = (statlist[i].m_ttl - statlist[i].m_time) + ttl;
+						statlist[i].m_time = 0;
+						isRested = true;
+						break;
+					}
+				}
+				if (!isRested)
+					player.m_seman.AddStatusEffect("Rested", true);
 				return true;
 			}
 			user.Message(MessageHud.MessageType.Center, "$msg_outof " + m_fuelItem.m_itemData.m_shared.m_name);
@@ -241,9 +298,20 @@ public class Bong : MonoBehaviour, Hoverable, Interactable
 		{
 			if ((float)Mathf.CeilToInt(m_nview.GetZDO().GetFloat("fuel")) >= m_maxFuel)
 			{
-				user.Message(MessageHud.MessageType.Center, Localization.instance.Localize("$msg_cantaddmore", item.m_shared.m_name));
-				//user.m_seman.AddStatusEffect("BongStatusEffect");
-				return true;
+				// Added 0.2.1 to fix the 1/1 weed buds error
+				//user.Message(MessageHud.MessageType.Center, Localization.instance.Localize("$msg_cantaddmore", item.m_shared.m_name));
+				//user.Message(MessageHud.MessageType.Center, Localization.instance.Localize("$bong_effectstart", m_fuelItem.m_itemData.m_shared.m_name));
+				//user.m_seman.AddStatusEffect("BongStatusEffect", true);
+				//// play bong sound
+				//m_fuelAddedEffects.Create(base.transform.position, base.transform.rotation);
+				//float @float = m_nview.GetZDO().GetFloat("fuel");
+				//@float -= 1;
+				//if (@float <= 0f)
+				//{
+				//	@float = 0f;
+				//}
+				//m_nview.GetZDO().Set("fuel", @float);
+				//return true;
 			}
 			Inventory inventory = user.GetInventory();
 			user.Message(MessageHud.MessageType.Center, Localization.instance.Localize("$msg_fireadding", item.m_shared.m_name));

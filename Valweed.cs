@@ -18,16 +18,21 @@ namespace Valweed
     {
         public const string PluginGUID = "com.drod917.Valweed";
         public const string PluginName = "Valweed";
-        public const string PluginVersion = "0.2.0";
+        public const string PluginVersion = "0.2.1";
 
-        // 0.2.0 update (First official beta release, back on track)
-        // Bong added! 
-        //  The bong effect lasts 3x the joint time.You can refresh it by smoking more, but the rested time wont be added
-        //  until the original time that the bong added has elapsed.
-        // Weed Nugs are now placeable.
-        // Thanks Gravebear for the model
-        // Thanks Zarboz for helping a lot
-        // Bong sounds from Zapsplat.com
+     // 0.2.1
+     //   Bong Effects Rework
+     //   I've redesigned the Bong's effect on the Rested buff.
+     //   If you aren't Rested, hitting (figuratively) the Bong makes you Rested according to your current comfort level. It also has its own buff.
+
+     //   If you are already Rested, each hit of the Bong will add 5 minutes to the effect, while refreshing its own buff.
+
+     //   Fixed an issue where Bongs were only placeable in the meadows. This seemed to be an internal bug, as I've used
+	    //a hacky workaround.But it works.
+
+     //   Fixed an issue where Bongs wouldn't let you hit them if you didn't have bud, even if the bowl was full.
+
+
 
         private AssetBundle jointResourceBundle;
         private AssetBundle plantResourceBundle;
@@ -636,6 +641,8 @@ namespace Valweed
             bong.Piece.GetComponent<Piece>().m_resources[1].m_recover = true;
             bong.Piece.GetComponent<Piece>().m_resources[2].m_recover = true;
             bong.Piece.GetComponent<Piece>().m_resources[3].m_recover = true;
+            bong.Piece.GetComponent<Bong>().ttl = jointEffectTime / 2;
+            bong.PiecePrefab.GetComponent<Piece>().m_onlyInBiome = (Heightmap.Biome)0;
             PrefabManager.Instance.AddPrefab(bongNoisePrefab);
             PieceManager.Instance.AddPiece(bong);
         }

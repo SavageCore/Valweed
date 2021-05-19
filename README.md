@@ -1,4 +1,19 @@
 Grow your own weed farm! Roll up joints for smoke-able buffs! 
+Now with an immersive Bong!
+
+0.2.1
+-----
+
+Bong Effects Rework
+I've redesigned the Bong's effect on the Rested buff.
+	If you aren't Rested, hitting (figuratively) the Bong makes you Rested according to your current comfort level. It also has its own buff.
+	If you are already Rested, each hit of the Bong will add 5 minutes to the effect, while refreshing its own buff.
+
+Fixed an issue where Bongs were only placeable in the meadows. This seemed to be an internal bug, as I've used
+	a hacky workaround. But it works.
+
+Fixed an issue where Bongs wouldn't let you hit them if you didn't have bud, even if the bowl was full.
+
 
 0.2.0
 -----
@@ -14,8 +29,6 @@ Placeable Bong added! Fill the bowl with your weed buds and get ZOOTED.
 	The bong effect is a combination of all 3 joint effects.
 	It also lasts 3x the joint effect time. You can refresh it by smoking more, but the rested time wont be added to
 	until the original time that the bong added has elapsed.
-
-Weed Nugs are now placeable.
 
 Thank you Gravebear for the 3D model! Check out his mods at https://valheim.thunderstore.io/package/OdinPlus/ (He has a BongLantern :)
 Thank you Zarboz for helping a lot with various issues throughout the life of this mod. Check out his mods at https://valheim.thunderstore.io/package/sbtoonz/
@@ -143,29 +156,7 @@ Translated Languages
     Italian
     Spanish
     French
-
-
-Languages Still in Need of Translation
-
-    Polish
-    Russian
-    Turkish
-    Dutch
-    Simplified Chinese
-    Japanese
-    Brazilian Portugese
-
-
-If there are any native language speakers who could translate these terms for me in the needed languages, I'd be super appreciative:
-
-Joint (Hybrid)
-Joint (Indica)
-Joint (Sativa)
-Smoke a fat doobie.
-You feel high.
-You're coming down.
-
-I'm not sure as to what the regional slang tends to be for each term, but I know it can vary a lot. I'd like to avoid translating "Joint" to "Hinge" or something lol
+    
 
 
 

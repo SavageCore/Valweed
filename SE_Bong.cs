@@ -23,24 +23,6 @@ public class SE_Bong : SE_Stats
         // Food rate modification
         // Runs until this script ends
         harmony.PatchAll(typeof(Player_UpdateFood_Transpiler));
-
-        // Manage Rested effect
-        Player player = m_character as Player;
-        List<StatusEffect> statlist = player.GetSEMan().m_statusEffects;
-        bool isRested = false;
-        for (int i = 0; i < statlist.Count; i++)
-        {
-            if (statlist[i].GetType() == typeof(SE_Rested))
-            {
-                // Set the current rested max time to (max time - time elapsed + 10m) and reset timer
-                statlist[i].m_ttl = (statlist[i].m_ttl - statlist[i].m_time) + ttl;
-                statlist[i].m_time = 0;
-                isRested = true;
-                break;
-            }
-        }
-        if (!isRested)
-            player.m_seman.AddStatusEffect("Rested", true);
     }
 
     // Called when the status effect ends
