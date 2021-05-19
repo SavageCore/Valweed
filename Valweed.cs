@@ -18,37 +18,16 @@ namespace Valweed
     {
         public const string PluginGUID = "com.drod917.Valweed";
         public const string PluginName = "Valweed";
-        public const string PluginVersion = "0.0.6";
+        public const string PluginVersion = "0.2.0";
 
-        // 006 updates
-        // Vanishing grown plant bugfix
-        /*
-         These are the terms in need of translation:
-Weed Seeds
-Seed-Weed Plant
-Seeds of the marijuana plant.
-Plant this to grow some weed.
-Plant this to grow some seedy weed.
-Joint Paper
-Use these to roll up a joint.
-Some very strinky bud.
-Joint (Hybrid)
-Joint (Indica)
-Joint (Sativa)
-Smoke a fat doobie.
-You feel high.
-You're coming down.
-Languages Still in Need of Translation
-
-    Polish
-    Russian
-    Turkish
-    Dutch
-    Simplified Chinese
-    Japanese
-    Brazilian Portugese
-        */
-        // TODO: Place bong
+        // 0.2.0 update (First official beta release, back on track)
+        // Bong added! 
+        //  The bong effect lasts 3x the joint time.You can refresh it by smoking more, but the rested time wont be added
+        //  until the original time that the bong added has elapsed.
+        // Weed Nugs are now placeable.
+        // Thanks Gravebear for the model
+        // Thanks Zarboz for helping a lot
+        // Bong sounds from Zapsplat.com
 
         private AssetBundle jointResourceBundle;
         private AssetBundle plantResourceBundle;
@@ -65,10 +44,12 @@ Languages Still in Need of Translation
         private GameObject weedSeedsPrefab;
         private GameObject weedPaperPrefab;
         private GameObject bongPrefab;
+        private GameObject bongNoisePrefab;
 
         private CustomStatusEffect hybridJointEffect;
         private CustomStatusEffect indicaJointEffect;
         private CustomStatusEffect sativaJointEffect;
+        private CustomStatusEffect bongStatusEffect;
 
         private float jointHealthRegenVal;
         private float jointStamRegenVal;
@@ -91,7 +72,7 @@ Languages Still in Need of Translation
             jointStamRegenMult = 1 + jointStamRegenVal / 100;
 
             LoadAssets();
-            AddLocalizations();
+            //AddLocalizations();
             AddStatusEffects();
             CreateItems();
             CreatePieces();
@@ -123,8 +104,9 @@ Languages Still in Need of Translation
             weedNugsPrefab = plantResourceBundle.LoadAsset<GameObject>("Assets/Plant/Seed/weed_buds.prefab");
             weedSeedsPrefab = plantResourceBundle.LoadAsset<GameObject>("Assets/Plant/Seed/weed_seeds.prefab");
 
-            //bongResourceBundle = AssetUtils.LoadAssetBundleFromResources("bong", Assembly.GetExecutingAssembly());
-            //bongPrefab = bongResourceBundle.LoadAsset<GameObject>("Assets/Bong/bong.prefab");
+            bongResourceBundle = AssetUtils.LoadAssetBundleFromResources("bong", Assembly.GetExecutingAssembly());
+            bongPrefab = bongResourceBundle.LoadAsset<GameObject>("Assets/Bong/Bong.prefab");
+            bongNoisePrefab = bongResourceBundle.LoadAsset<GameObject>("Assets/Bong/sfx_hit_bong.prefab");
         }
 
         // Adds localizations with configs
@@ -184,7 +166,7 @@ Languages Still in Need of Translation
                     {"hybrid_joint_effectname", "High (Hybrid)"},
                     {"indica_joint_effectname", "High (Indica)"},
                     {"sativa_joint_effectname", "High (Sativa)"},
-                    {"joint_effectstart", "Du f�hlst dich hoch."},
+                    {"joint_effectstart", "Du fühlst dich hoch."},
                     {"joint_effectstop", "Du kommst runter."}
                 }
             });
@@ -231,11 +213,11 @@ Languages Still in Need of Translation
                     {"piece_sapling_weed_desc", "Plant this to grow some weed."},
                     {"item_joint_paper", "Joint Paper" },
                     {"item_joint_paper_desc", "Use these to roll up a joint."}, //TODO
-                    {"item_hybrid_joint", "P�tard (Hybrid)"},
+                    {"item_hybrid_joint", "Pétard (Hybrid)"},
                     {"item_hybrid_joint_desc", "Fumer un gros doobie."},
-                    {"item_indica_joint", "P�tard (Indica)"},
+                    {"item_indica_joint", "Pétard (Indica)"},
                     {"item_indica_joint_desc", "Fumer un gros doobie."},
-                    {"item_sativa_joint", "P�tard (Sativa)"},
+                    {"item_sativa_joint", "Pétard (Sativa)"},
                     {"item_sativa_joint_desc", "Fumer un gros doobie."},
                     {"hybrid_joint_effectname", "High (Hybrid)"},
                     {"indica_joint_effectname", "High (Indica)"},
@@ -269,7 +251,7 @@ Languages Still in Need of Translation
                     {"indica_joint_effectname", "High (Indica)"},
                     {"sativa_joint_effectname", "High (Sativa)"},
                     {"joint_effectstart", "Te sientes alto."},
-                    {"joint_effectstop", "Te est�s volviendo sobrio."}
+                    {"joint_effectstop", "Te estás volviendo sobrio."}
                 }
             });
 
@@ -340,18 +322,18 @@ Languages Still in Need of Translation
                     {"piece_sapling_weed", "Weed Plant"},
                     {"piece_sapling_weed_desc", "Plant this to grow some weed."},
                     {"item_joint_paper", "Joint Paper" },
-                    {"item_joint_paper_desc", "Use these to roll up a joint."}, //TODO
-                    {"item_hybrid_joint", "Joint (Hybrid)"},
-                    {"item_hybrid_joint_desc", "Smoke a fat doobie."},
-                    {"item_indica_joint", "Joint (Indica)"},
-                    {"item_indica_joint_desc", "Smoke a fat doobie."},
-                    {"item_sativa_joint", "Joint (Sativa)"},
-                    {"item_sativa_joint_desc", "Smoke a fat doobie."},
-                    {"hybrid_joint_effectname", "High (Hybrid)"},
-                    {"indica_joint_effectname", "High (Indica)"},
-                    {"sativa_joint_effectname", "High (Sativa)"},
-                    {"joint_effectstart", "You feel high."},
-                    {"joint_effectstop", "You're coming down."}
+                    {"item_joint_paper_desc", "Use these to roll up a joint."}, //TODO, thank alpinel
+                    {"item_hybrid_joint", "Cigara (Karisik)"},
+                    {"item_hybrid_joint_desc", "Sisman bi cigara iç."},
+                    {"item_indica_joint", "Cigara (Bayiltan)"},
+                    {"item_indica_joint_desc", "Sisman bi cigara iç."},
+                    {"item_sativa_joint", "Cigara (Güldüren)"},
+                    {"item_sativa_joint_desc", "Sisman bi cigara iç."},
+                    {"hybrid_joint_effectname", "Yüksek (Karisik)"},
+                    {"indica_joint_effectname", "Yüksek (Bayiltan)"},
+                    {"sativa_joint_effectname", "Yüksek (Güldüren)"},
+                    {"joint_effectstart", "Kafan güzel oldu."},
+                    {"joint_effectstop", "Kafan aciliyo."}
                 }
             });
 
@@ -458,7 +440,7 @@ Languages Still in Need of Translation
             hybridEffect.m_startMessage = "$joint_effectstart";
             hybridEffect.m_stopMessageType = MessageHud.MessageType.Center;
             hybridEffect.m_stopMessage = "$joint_effectstop";
-            hybridEffect.m_tooltip = $"You feel balanced.\nHealth regen +{jointHealthRegenVal}%\nStamina regen +{jointStamRegenVal}%";
+            hybridEffect.m_tooltip = $"You feel balanced.";
             hybridJointEffect = new CustomStatusEffect(hybridEffect, fixReference: false); 
             ItemManager.Instance.AddStatusEffect(hybridJointEffect);
 
@@ -475,8 +457,7 @@ Languages Still in Need of Translation
             indicaEffect.m_startMessage = "$joint_effectstart";
             indicaEffect.m_stopMessageType = MessageHud.MessageType.Center;
             indicaEffect.m_stopMessage = "$joint_effectstop";
-            indicaEffect.m_tooltip = $"You feel relaxed.\nMakes you Rested.\nIf you are already Rested, smoking will add {jointEffectTime / 60}m to the effect." +
-                                        $"\nHealth regen +{jointHealthRegenVal}%\nStamina regen +{jointStamRegenVal}%";
+            indicaEffect.m_tooltip = $"You feel relaxed.\nMakes you Rested.\nIf you are already Rested, smoking will add {jointEffectTime / 60}m to the effect.";
             indicaJointEffect = new CustomStatusEffect(indicaEffect, fixReference: false);
             ItemManager.Instance.AddStatusEffect(indicaJointEffect);
 
@@ -494,9 +475,29 @@ Languages Still in Need of Translation
             sativaEffect.m_startMessage = "$joint_effectstart";
             sativaEffect.m_stopMessageType = MessageHud.MessageType.Center;
             sativaEffect.m_stopMessage = "$joint_effectstop";
-            sativaEffect.m_tooltip = $"You feel motivated.\nHealth regen +{jointHealthRegenVal}%\nStamina regen +{jointStamRegenVal}%\nHunger rate -50%";
+            sativaEffect.m_tooltip = $"You feel motivated.\nHunger rate -50%";
             sativaJointEffect = new CustomStatusEffect(sativaEffect, fixReference: false);
             ItemManager.Instance.AddStatusEffect(sativaJointEffect);
+
+            SE_Bong bongEffect = ScriptableObject.CreateInstance<SE_Bong>();
+            // Add config values
+            bongEffect.healthRegenMult = jointHealthRegenMult;
+            bongEffect.staminaRegenMult = jointStamRegenMult;
+            bongEffect.ttl = jointEffectTime * 3;
+
+            //bongEffect.m_startEffects.m_effectPrefabs[0].m_prefab = bongNoisePrefab;
+            //bongEffect.m_startEffects.m_effectPrefabs[0].m_enabled = true;
+
+            bongEffect.name = "BongStatusEffect";
+            bongEffect.m_name = "$bong_effectname";
+            bongEffect.m_icon = statusIcon;
+            bongEffect.m_startMessageType = MessageHud.MessageType.Center;
+            bongEffect.m_startMessage = "$bong_effectstart";
+            bongEffect.m_stopMessageType = MessageHud.MessageType.Center;
+            bongEffect.m_stopMessage = "$joint_effectstop";
+            bongEffect.m_tooltip = $"You feel ZOOTED.\nAll three joint effects are combined.\nHunger rate -50%\nMakes you Rested.";
+            bongStatusEffect = new CustomStatusEffect(bongEffect, fixReference: false);
+            ItemManager.Instance.AddStatusEffect(bongStatusEffect);
         }
 
         private void CreateItems()
@@ -601,20 +602,42 @@ Languages Still in Need of Translation
             PrefabManager.Instance.AddPrefab(pickableSeedWeedPrefab);
             PieceManager.Instance.AddPiece(weedSeedPlant);
 
-            //CustomPiece bong = new CustomPiece(bongPrefab,
-            //    new PieceConfig
-            //    {
-            //        PieceTable = "Hammer",
-            //        Requirements = new[]
-            //        {
-            //            new RequirementConfig { Item = "Wood", Amount = 1 }
-            //        }
-            //    });
-            //bong.PiecePrefab.AddComponent<Bong>();
-            //Bong bongConfig = new Bong();
-            //bongConfig.m_name = "$piece_bong";
-
-            //PieceManager.Instance.AddPiece(bong);
+            CustomPiece bong = new CustomPiece(bongPrefab,
+                new PieceConfig
+                {
+                    PieceTable = "Hammer",
+                    Requirements = new[]
+                    {
+                        new RequirementConfig { Item = "BronzeNails", Amount = 5 },
+                        new RequirementConfig { Item = "Resin", Amount = 10 },
+                        new RequirementConfig { Item = "TrophySkeleton", Amount = 1 },
+                        new RequirementConfig { Item = "GreydwarfEye", Amount = 5 }
+                    }
+                });
+            // Bong effect 
+            bong.PiecePrefab.AddComponent<Bong>();
+            bong.PiecePrefab.GetComponent<Bong>().m_name = "$piece_bong";
+            bong.PiecePrefab.GetComponent<Bong>().m_startFuel = 0;
+            bong.PiecePrefab.GetComponent<Bong>().m_maxFuel = 1;
+            bong.PiecePrefab.GetComponent<Bong>().m_secPerFuel = 90000;
+            bong.PiecePrefab.GetComponent<Bong>().m_checkTerrainOffset = 0;
+            bong.PiecePrefab.GetComponent<Bong>().m_coverCheckOffset = 0;
+            bong.PiecePrefab.GetComponent<Bong>().m_fuelItem = weedNugsPrefab.GetComponent<ItemDrop>();
+            // Bong noise update
+            EffectList.EffectData[] bongEffects = new EffectList.EffectData[1];
+            EffectList.EffectData bongEffect = new EffectList.EffectData
+            {
+                m_prefab = bongNoisePrefab,
+                m_enabled = true
+            };
+            bongEffects[0] = bongEffect;
+            bong.PiecePrefab.GetComponent<Bong>().m_fuelAddedEffects.m_effectPrefabs = bongEffects;
+            bong.Piece.GetComponent<Piece>().m_resources[0].m_recover = true;
+            bong.Piece.GetComponent<Piece>().m_resources[1].m_recover = true;
+            bong.Piece.GetComponent<Piece>().m_resources[2].m_recover = true;
+            bong.Piece.GetComponent<Piece>().m_resources[3].m_recover = true;
+            PrefabManager.Instance.AddPrefab(bongNoisePrefab);
+            PieceManager.Instance.AddPiece(bong);
         }
     }
 }
