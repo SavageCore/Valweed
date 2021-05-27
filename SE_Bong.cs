@@ -25,6 +25,13 @@ public class SE_Bong : SE_Stats
         harmony.PatchAll(typeof(Player_UpdateFood_Transpiler));
     }
 
+    public override void ResetTime()
+    {
+        base.ResetTime();
+        float radius = m_character.GetRadius();
+        m_startEffectInstances = m_startEffects.Create(m_character.GetCenterPoint(), m_character.transform.rotation, m_character.transform, radius * 2f);
+    }
+
     // Called when the status effect ends
     public override void Stop()
     {

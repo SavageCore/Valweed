@@ -1,6 +1,24 @@
 Grow your own weed farm! Roll up joints for smoke-able buffs! 
 Now with an immersive Bong!
 
+
+
+0.2.3
+-----
+Smoke now emits from mouth when joints or the bong are smoked.
+Smoke now emits from the bong when used.
+Weed nugs now show in the bowl when it is filled.
+More sound effects added.
+
+
+
+0.2.2
+-----
+Bong collider issue fixed. The Bong now sits flush with the surface it's built on.
+Bong / Joints / Bud textures updated.
+
+
+
 0.2.1
 -----
 
@@ -156,7 +174,29 @@ Translated Languages
     Italian
     Spanish
     French
-    
+
+
+Languages Still in Need of Translation
+
+    Polish
+    Russian
+    Turkish
+    Dutch
+    Simplified Chinese
+    Japanese
+    Brazilian Portugese
+
+
+If there are any native language speakers who could translate these terms for me in the needed languages, I'd be super appreciative:
+
+Joint (Hybrid)
+Joint (Indica)
+Joint (Sativa)
+Smoke a fat doobie.
+You feel high.
+You're coming down.
+
+I'm not sure as to what the regional slang tends to be for each term, but I know it can vary a lot. I'd like to avoid translating "Joint" to "Hinge" or something lol
 
 
 

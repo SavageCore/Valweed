@@ -36,6 +36,7 @@ public class Bong : MonoBehaviour, Hoverable, Interactable
 	public SmokeSpawner m_smokeSpawner;
 
 	public EffectList m_fuelAddedEffects = new EffectList();
+	public EffectList m_smokedEffects = new EffectList();
 
 	[Header("Fireworks")]
 	public ItemDrop m_fireworkItem;
@@ -210,6 +211,16 @@ public class Bong : MonoBehaviour, Hoverable, Interactable
 		Inventory inventory = user.GetInventory();
 		if (inventory != null)
 		{
+			Vector3 bongSmokePos = base.transform.position;
+			bongSmokePos.y += (float)1.65;
+
+			//Vector3 mouthSmokePos = user.transform.position;
+			//mouthSmokePos.y += (float)0.825;
+
+			//Vector3 mouthSmokePos = user.m_head.transform.position;
+			//Quaternion mouthSmokeAngle = user.m_head.rotation;
+			//mouthSmokeAngle.eulerAngles.Set(0, 0, 90);
+
 			// Player has buds, bong is empty
 			if (inventory.HaveItem(m_fuelItem.m_itemData.m_shared.m_name))
 			{
@@ -217,8 +228,10 @@ public class Bong : MonoBehaviour, Hoverable, Interactable
 				{
 					user.Message(MessageHud.MessageType.Center, Localization.instance.Localize("$bong_effectstart", m_fuelItem.m_itemData.m_shared.m_name));
 					user.m_seman.AddStatusEffect("BongStatusEffect", true);
-					// play bong sound
-					m_fuelAddedEffects.Create(base.transform.position, base.transform.rotation);
+					// play bong sound / smoke effect
+					m_fuelAddedEffects.Create(bongSmokePos, base.transform.rotation);
+					//m_smokedEffects.Create(mouthSmokePos, user.transform.rotation);
+
 					float @float = m_nview.GetZDO().GetFloat("fuel");
 					@float -= 1;
                     if (@float <= 0f)
@@ -226,6 +239,7 @@ public class Bong : MonoBehaviour, Hoverable, Interactable
                         @float = 0f;
                     }
                     m_nview.GetZDO().Set("fuel", @float);
+					base.transform.Find("_enabled").gameObject.SetActive(false);
 
 					// Rested Management
 					Player player = user as Player;
@@ -249,6 +263,7 @@ public class Bong : MonoBehaviour, Hoverable, Interactable
 				}
 				user.Message(MessageHud.MessageType.Center, Localization.instance.Localize("$bong_addbud", m_fuelItem.m_itemData.m_shared.m_name));
 				inventory.RemoveItem(m_fuelItem.m_itemData.m_shared.m_name, 1);
+                base.transform.Find("_enabled").gameObject.SetActive(true);
 				m_nview.InvokeRPC("AddFuel");
 				return true;
 			}
@@ -257,8 +272,10 @@ public class Bong : MonoBehaviour, Hoverable, Interactable
             {
 				user.Message(MessageHud.MessageType.Center, Localization.instance.Localize("$bong_effectstart", m_fuelItem.m_itemData.m_shared.m_name));
 				user.m_seman.AddStatusEffect("BongStatusEffect", true);
-				// play bong sound
-				m_fuelAddedEffects.Create(base.transform.position, base.transform.rotation);
+				// play bong sound / smoke effect
+				m_fuelAddedEffects.Create(bongSmokePos, base.transform.rotation);
+				//m_smokedEffects.Create(mouthSmokePos, user.transform.rotation);
+
 				float @float = m_nview.GetZDO().GetFloat("fuel");
 				@float -= 1;
 				if (@float <= 0f)
@@ -266,6 +283,7 @@ public class Bong : MonoBehaviour, Hoverable, Interactable
 					@float = 0f;
 				}
 				m_nview.GetZDO().Set("fuel", @float);
+				base.transform.Find("_enabled").gameObject.SetActive(false);
 
 				// Rested Management
 				Player player = user as Player;
