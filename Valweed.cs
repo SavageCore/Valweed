@@ -18,17 +18,16 @@ namespace Valweed
     {
         public const string PluginGUID = "com.drod917.Valweed";
         public const string PluginName = "Valweed";
-        public const string PluginVersion = "0.2.3";
+        public const string PluginVersion = "0.2.4";
 
-    // 0.2.3 
-    // Smoke now emits from mouth when joints and the bong are smoked.
-    // Smoke now emits from the bong when used.
-    // Weed nugs now show in the bowl when it is filled.
-    // More sound effects added.
+        // 0.2.4
+        // Smoke now emits from the mouth after the Bong is smoked.
+        // Smoke position has been fixed based on pose.
 
         private AssetBundle jointResourceBundle;
         private AssetBundle plantResourceBundle;
         private AssetBundle bongResourceBundle;
+        AssetBundle spriteBundle;
 
         private GameObject hybridJointPrefab;
         private GameObject indicaJointPrefab;
@@ -47,6 +46,8 @@ namespace Valweed
         private GameObject bongPrefab;
         private GameObject bongNoisePrefab;
         private GameObject bongSmokePrefab;
+        private GameObject bongMouthSmokePrefab;
+        private GameObject bongInhaleNoisePrefab;
 
         private GameObject mouthSmokePrefab;
         private GameObject jointNoisePrefab;
@@ -83,6 +84,37 @@ namespace Valweed
             CreatePieces();
         }
 
+        private void OnDestroy()
+        {
+            jointResourceBundle.Unload(true);
+            plantResourceBundle.Unload(true);
+            bongResourceBundle.Unload(true);
+            spriteBundle.Unload(true);
+
+            Destroy(hybridJointPrefab);
+            Destroy(indicaJointPrefab);
+            Destroy(sativaJointPrefab);
+
+            Destroy(weedSaplingPrefab);
+            Destroy(weedSeedSaplingPrefab);
+            Destroy(pickableWeedPrefab);
+            Destroy(pickableSeedWeedPrefab);
+
+            Destroy(weedNugsPrefab);
+            Destroy(weedNugPrefab);
+            Destroy(weedSeedsPrefab);
+            Destroy(weedPaperPrefab);
+
+            Destroy(bongPrefab);
+            Destroy(bongNoisePrefab);
+            Destroy(bongSmokePrefab);
+
+            Destroy(mouthSmokePrefab);
+            Destroy(jointNoisePrefab);
+
+
+    }
+
         private void Update()
         {
         }
@@ -105,7 +137,6 @@ namespace Valweed
             weedSeedSaplingPrefab = plantResourceBundle.LoadAsset<GameObject>("sapling_seedweed");
             pickableWeedPrefab = plantResourceBundle.LoadAsset<GameObject>("Pickable_WeedPlant");
             pickableSeedWeedPrefab = plantResourceBundle.LoadAsset<GameObject>("Pickable_SeedWeedPlant");
-
             // ItemDrop stuff
             weedNugsPrefab = plantResourceBundle.LoadAsset<GameObject>("weed_buds");
             weedSeedsPrefab = plantResourceBundle.LoadAsset<GameObject>("weed_seeds");
@@ -114,8 +145,10 @@ namespace Valweed
             bongPrefab = bongResourceBundle.LoadAsset<GameObject>("Bong");
             weedNugPrefab = bongResourceBundle.LoadAsset<GameObject>("bud");
             bongNoisePrefab = bongResourceBundle.LoadAsset<GameObject>("sfx_hit_bong");
+            bongInhaleNoisePrefab = bongResourceBundle.LoadAsset<GameObject>("sfx_hit_bong_inhale");
             bongSmokePrefab = bongResourceBundle.LoadAsset<GameObject>("vfx_bong_smoke");
             mouthSmokePrefab = bongResourceBundle.LoadAsset<GameObject>("vfx_mouth_smoke");
+            bongMouthSmokePrefab = bongResourceBundle.LoadAsset<GameObject>("vfx_mouth_smoke_bong");
         }
 
         // Adds localizations with configs
@@ -430,14 +463,10 @@ namespace Valweed
 
         private void AddStatusEffects()
         {
-            AssetBundle spriteBundle = AssetUtils.LoadAssetBundleFromResources("high_eyes", Assembly.GetExecutingAssembly());
+            spriteBundle = AssetUtils.LoadAssetBundleFromResources("high_eyes", Assembly.GetExecutingAssembly());
             Sprite statusIcon = spriteBundle.LoadAsset<Sprite>("Assets/Joint/high_eyes.png");
 
             // Smoking effect from mouth
-            mouthSmokePrefab.transform.localScale = new Vector3((float)0.1, (float)0.1, (float)0.1);
-
-            PrefabManager.Instance.AddPrefab(jointNoisePrefab);
-            PrefabManager.Instance.AddPrefab(mouthSmokePrefab);
             EffectList.EffectData[] mouthEffects = new EffectList.EffectData[2];
             EffectList.EffectData mouthEffect = new EffectList.EffectData
             {
@@ -511,6 +540,23 @@ namespace Valweed
             sativaJointEffect = new CustomStatusEffect(sativaEffect, fixReference: false);
             ItemManager.Instance.AddStatusEffect(sativaJointEffect);
 
+
+            EffectList.EffectData[] bongMouthEffects = new EffectList.EffectData[2];
+            EffectList.EffectData bongMouthEffect = new EffectList.EffectData
+            {
+                m_prefab = bongMouthSmokePrefab,
+                m_attach = true,
+                m_enabled = true
+            };
+            EffectList.EffectData bongMouthSound = new EffectList.EffectData
+            {
+                m_prefab = bongInhaleNoisePrefab,
+                m_attach = true,
+                m_enabled = true
+            };
+            bongMouthEffects[0] = bongMouthEffect;
+            bongMouthEffects[1] = bongMouthSound;
+
             SE_Bong bongEffect = ScriptableObject.CreateInstance<SE_Bong>();
             // Add config values
             bongEffect.healthRegenMult = jointHealthRegenMult;
@@ -525,7 +571,7 @@ namespace Valweed
             bongEffect.m_stopMessageType = MessageHud.MessageType.Center;
             bongEffect.m_stopMessage = "$joint_effectstop";
             bongEffect.m_tooltip = $"You feel ZOOTED.\nAll three joint effects are combined.\nHunger rate -50%\nMakes you Rested.";
-            //bongEffect.m_startEffects.m_effectPrefabs = mouthEffects;
+            bongEffect.m_startEffects.m_effectPrefabs = bongMouthEffects;
             bongStatusEffect = new CustomStatusEffect(bongEffect, fixReference: false);
             ItemManager.Instance.AddStatusEffect(bongStatusEffect);
         }

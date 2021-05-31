@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using System.Linq;
+using UnityEngine;
 
 public class SE_Bong : SE_Stats
 {
@@ -23,13 +24,22 @@ public class SE_Bong : SE_Stats
         // Food rate modification
         // Runs until this script ends
         harmony.PatchAll(typeof(Player_UpdateFood_Transpiler));
+
+        float radius = m_character.GetRadius();
+        RemoveStartEffects();
+        m_startEffectInstances = m_startEffects.Create(m_character.m_head.transform.position, m_character.m_head.transform.rotation, m_character.m_head.transform, radius * 2f);
+    }
+
+    public bool IsSitting()
+    {
+        return m_character.m_animator.GetCurrentAnimatorStateInfo(0).tagHash == Character.m_animatorTagSitting;
     }
 
     public override void ResetTime()
     {
         base.ResetTime();
         float radius = m_character.GetRadius();
-        m_startEffectInstances = m_startEffects.Create(m_character.GetCenterPoint(), m_character.transform.rotation, m_character.transform, radius * 2f);
+        m_startEffectInstances = m_startEffects.Create(m_character.m_head.transform.position, m_character.m_head.transform.rotation, m_character.m_head.transform, radius * 2f);
     }
 
     // Called when the status effect ends

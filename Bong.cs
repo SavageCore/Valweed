@@ -214,13 +214,6 @@ public class Bong : MonoBehaviour, Hoverable, Interactable
 			Vector3 bongSmokePos = base.transform.position;
 			bongSmokePos.y += (float)1.65;
 
-			//Vector3 mouthSmokePos = user.transform.position;
-			//mouthSmokePos.y += (float)0.825;
-
-			//Vector3 mouthSmokePos = user.m_head.transform.position;
-			//Quaternion mouthSmokeAngle = user.m_head.rotation;
-			//mouthSmokeAngle.eulerAngles.Set(0, 0, 90);
-
 			// Player has buds, bong is empty
 			if (inventory.HaveItem(m_fuelItem.m_itemData.m_shared.m_name))
 			{
