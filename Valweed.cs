@@ -18,7 +18,10 @@ namespace Valweed
     {
         public const string PluginGUID = "com.drod917.Valweed";
         public const string PluginName = "Valweed";
-        public const string PluginVersion = "0.2.5";
+        public const string PluginVersion = "0.2.6";
+
+        // 0.2.6
+        // Fixed crashing on quit - Unloaded bundle issue
 
         // 0.2.5 
         // Fixed the console spam issue
@@ -84,37 +87,6 @@ namespace Valweed
             CreatePieces();
         }
 
-        private void OnDestroy()
-        {
-            jointResourceBundle.Unload(true);
-            plantResourceBundle.Unload(true);
-            bongResourceBundle.Unload(true);
-            spriteBundle.Unload(true);
-
-            Destroy(hybridJointPrefab);
-            Destroy(indicaJointPrefab);
-            Destroy(sativaJointPrefab);
-
-            Destroy(weedSaplingPrefab);
-            Destroy(weedSeedSaplingPrefab);
-            Destroy(pickableWeedPrefab);
-            Destroy(pickableSeedWeedPrefab);
-
-            Destroy(weedNugsPrefab);
-            Destroy(weedNugPrefab);
-            Destroy(weedSeedsPrefab);
-            Destroy(weedPaperPrefab);
-
-            Destroy(bongPrefab);
-            Destroy(bongNoisePrefab);
-            Destroy(bongSmokePrefab);
-
-            Destroy(mouthSmokePrefab);
-            Destroy(jointNoisePrefab);
-
-
-    }
-
         private void Update()
         {
         }
@@ -138,7 +110,7 @@ namespace Valweed
             pickableWeedPrefab = plantResourceBundle.LoadAsset<GameObject>("Pickable_WeedPlant");
             pickableSeedWeedPrefab = plantResourceBundle.LoadAsset<GameObject>("Pickable_SeedWeedPlant");
             // ItemDrop stuff
-            weedNugsPrefab = plantResourceBundle.LoadAsset<GameObject>("weed_buds");
+            weedNugsPrefab = plantResourceBundle.LoadAsset<GameObject>("WeedBuds");
             weedSeedsPrefab = plantResourceBundle.LoadAsset<GameObject>("weed_seeds");
 
             bongResourceBundle = AssetUtils.LoadAssetBundleFromResources("bong", Assembly.GetExecutingAssembly());
@@ -596,7 +568,7 @@ namespace Valweed
                     Requirements = new[]
                     {
                         new RequirementConfig { Item = "joint_paper", Amount = 1 },
-                        new RequirementConfig { Item = "weed_buds", Amount = 1 },
+                        new RequirementConfig { Item = "WeedBuds", Amount = 1 },
                         new RequirementConfig { Item = "Raspberry", Amount = 1 }
                     }
                 });
@@ -611,7 +583,7 @@ namespace Valweed
                     Requirements = new[]
                     {
                         new RequirementConfig { Item = "joint_paper", Amount = 1 },
-                        new RequirementConfig { Item = "weed_buds", Amount = 1 },
+                        new RequirementConfig { Item = "WeedBuds", Amount = 1 },
                         new RequirementConfig { Item = "Blueberries", Amount = 1 }
                     }
                 });
@@ -627,7 +599,7 @@ namespace Valweed
                     Requirements = new[]
                     {
                         new RequirementConfig { Item = "joint_paper", Amount = 1 },
-                        new RequirementConfig { Item = "weed_buds", Amount = 1 },
+                        new RequirementConfig { Item = "WeedBuds", Amount = 1 },
                         new RequirementConfig { Item = "Honey", Amount = 1 }
                     }
                 });
@@ -683,7 +655,7 @@ namespace Valweed
                     PieceTable = "Cultivator",
                     Requirements = new[]
                     {
-                        new RequirementConfig { Item = "weed_buds", Amount = 1 }
+                        new RequirementConfig { Item = "WeedBuds", Amount = 1 }
                     }
                 });
             

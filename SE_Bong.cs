@@ -7,16 +7,19 @@ using UnityEngine;
 
 public class SE_Bong : SE_Stats
 {
-    private Harmony harmony = new Harmony("com.drod917.Valweed");
+    private Harmony harmony = new Harmony("com.drod917.Valweed.SEBong");
     public float healthRegenMult;
     public float staminaRegenMult;
     public float ttl;
+    private static Color defaultFogColor;
+    private static Color defaultAmbientSkyColor;
+    private static Color defaultAmbientLightColor;
+    private static float defaultFogDensity;
+    private static float defaultAmbientIntensity;
 
     // Called when the status effect first begins
     public override void Setup(Character character)
     {
-        // Modify regens
-        //base.Setup(character);
         // StatusEffect Setup without TriggerStartEffects()
         m_character = character;
         if (!string.IsNullOrEmpty(m_startMessage))
@@ -42,10 +45,17 @@ public class SE_Bong : SE_Stats
         base.m_healthRegenMultiplier = healthRegenMult;
         base.m_staminaRegenMultiplier = staminaRegenMult;
         base.m_ttl = ttl;
+        
+        defaultAmbientLightColor = RenderSettings.ambientLight;
+        defaultAmbientSkyColor = RenderSettings.ambientSkyColor;
+        defaultAmbientIntensity = RenderSettings.ambientIntensity;
+        defaultFogDensity = RenderSettings.fogDensity;
+        defaultFogColor = RenderSettings.fogColor;
 
         // Food rate modification
         // Runs until this script ends
         harmony.PatchAll(typeof(Player_UpdateFood_Transpiler));
+        //harmony.PatchAll(typeof(GameCamera_UpdateCamera_Start));
 
         float radius = m_character.GetRadius();
         m_startEffectInstances = m_startEffects.Create(m_character.m_head.transform.position, m_character.m_head.transform.rotation, m_character.m_head.transform, radius * 2f);
@@ -67,10 +77,11 @@ public class SE_Bong : SE_Stats
     public override void Stop()
     {
         base.Stop();
+        //harmony.PatchAll(typeof(GameCamera_UpdateCamera_Stop));
         harmony.UnpatchSelf();
     }
 
-    [HarmonyPatch(typeof(Player), nameof(Player.UpdateFood))] 
+    [HarmonyPatch(typeof(Player), nameof(Player.UpdateFood))]
     public static class Player_UpdateFood_Transpiler
     {
         private static FieldInfo field_Player_m_foodUpdateTimer = AccessTools.Field(typeof(Player), nameof(Player.m_foodUpdateTimer));
@@ -125,6 +136,35 @@ public class SE_Bong : SE_Stats
             }
 
             return dt / applyModifierValue(1.0f, 50f);
+        }
+    }
+
+
+    [HarmonyPatch(typeof(GameCamera), "UpdateCamera")]
+    public static class GameCamera_UpdateCamera_Start
+    {
+        [HarmonyPrefix]
+        public static void Prefix(GameCamera __instance)
+        {
+            //RenderSettings.fogColor = new Color(0.2f, 0.7f, 0.3f, 0.6f);
+            //RenderSettings.fogDensity = 0.01f;
+            RenderSettings.ambientLight = new Color(0.2f, 0.7f, 0.3f, 0.2f);
+            RenderSettings.ambientSkyColor = new Color(0.2f, 0.7f, 0.3f, 0.2f);
+            RenderSettings.ambientIntensity = 0.005f;
+        }
+    }
+
+    [HarmonyPatch(typeof(GameCamera), "UpdateCamera")]
+    public static class GameCamera_UpdateCamera_Stop
+    {
+        [HarmonyPrefix]
+        public static void Prefix(GameCamera __instance)
+        {
+            //RenderSettings.fogColor = defaultFogColor;
+            //RenderSettings.fogDensity = defaultFogDensity;
+            RenderSettings.ambientLight = defaultAmbientLightColor;
+            RenderSettings.ambientSkyColor = defaultAmbientSkyColor;
+            RenderSettings.ambientIntensity = defaultAmbientIntensity;
         }
     }
 }

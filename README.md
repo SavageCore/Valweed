@@ -2,6 +2,12 @@ Grow your own weed farm! Roll up joints for smoke-able buffs!
 Now with an immersive Bong!
 
 
+0.2.6
+-----
+Fixed crashing on quit due to unloaded assetbundles.
+Renamed prefabs for more organization. (Check mod page for the list)
+
+
 0.2.5
 -----
 Fixed an issue that spammed the console when moving away from the smoke FX.

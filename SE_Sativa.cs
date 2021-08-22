@@ -7,7 +7,7 @@ using UnityEngine;
 
 public class SE_Sativa : SE_Stats
 {
-    private Harmony harmony = new Harmony("com.drod917.Valweed");
+    private Harmony harmony = new Harmony("com.drod917.Valweed.SESativa");
     public float healthRegenMult;
     public float staminaRegenMult;
     public float ttl;
