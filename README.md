@@ -1,6 +1,10 @@
 Grow your own weed farm! Roll up joints for smoke-able buffs! 
 Now with an immersive Bong!
 
+0.2.7
+-----
+Removed unnecessary code that caused errors in the coming Jotunn update.
+
 
 0.2.6
 -----
