@@ -589,7 +589,6 @@ namespace Valweed
                 });
             indicaJoint.ItemDrop.m_itemData.m_shared.m_itemType = ItemDrop.ItemData.ItemType.Consumable;
             indicaJoint.ItemDrop.m_itemData.m_shared.m_consumeStatusEffect = indicaJointEffect.StatusEffect;
-            indicaJoint.ItemPrefab = indicaJointPrefab;
             ItemManager.Instance.AddItem(indicaJoint);
 
             CustomItem sativaJoint = new CustomItem(sativaJointPrefab, fixReference: false,
@@ -605,7 +604,6 @@ namespace Valweed
                 });
             sativaJoint.ItemDrop.m_itemData.m_shared.m_itemType = ItemDrop.ItemData.ItemType.Consumable;
             sativaJoint.ItemDrop.m_itemData.m_shared.m_consumeStatusEffect = sativaJointEffect.StatusEffect;
-            sativaJoint.ItemPrefab = sativaJointPrefab;
             ItemManager.Instance.AddItem(sativaJoint);
 
             CustomItem weed_papers = new CustomItem(weedPaperPrefab, fixReference: false,
