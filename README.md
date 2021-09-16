@@ -1,6 +1,11 @@
 Grow your own weed farm! Roll up joints for smoke-able buffs! 
 Now with an immersive Bong!
 
+0.2.8
+-----
+Hearth & Home compatibility update.
+
+
 0.2.7
 -----
 Removed unnecessary code that caused errors in the coming Jotunn update.
@@ -9,7 +14,7 @@ Removed unnecessary code that caused errors in the coming Jotunn update.
 0.2.6
 -----
 Fixed crashing on quit due to unloaded assetbundles.
-Renamed prefabs for more organization. (Check mod page for the list)
+
 
 
 0.2.5
