@@ -18,12 +18,20 @@ namespace Valweed
     {
         public const string PluginGUID = "com.drod917.Valweed";
         public const string PluginName = "Valweed";
-        public const string PluginVersion = "0.2.7";
+        public const string PluginVersion = "0.2.8";
 
-        // 0.2.8 
-        // TODO:
-        // - Variable yields
-        // - Server-side configs
+        // 0.2.8
+        // Update Jotunn dependency to 2.3.0
+
+        // 0.2.7
+        // Removed unnecessary code that caused errors in the coming Jotunn update.
+
+        // 0.2.6
+        // Fixed crashing on quit - Unloaded bundle issue
+
+        // 0.2.5 
+        // Fixed the console spam issue
+        // TODO: Console still gets spammed when joint status effect wears off and you move far fast
 
         private AssetBundle jointResourceBundle;
         private AssetBundle plantResourceBundle;
@@ -322,7 +330,7 @@ namespace Valweed
 
         private void CreatePieces()
         {
-            CustomPiece weedPlant = new CustomPiece(weedSaplingPrefab,
+            CustomPiece weedPlant = new CustomPiece(weedSaplingPrefab, true,
                 new PieceConfig
                 {
                     PieceTable = "Cultivator",
@@ -334,7 +342,7 @@ namespace Valweed
             
             PieceManager.Instance.AddPiece(weedPlant);
 
-            CustomPiece weedSeedPlant = new CustomPiece(weedSeedSaplingPrefab,
+            CustomPiece weedSeedPlant = new CustomPiece(weedSeedSaplingPrefab, true,
                 new PieceConfig
                 {
                     PieceTable = "Cultivator",
@@ -346,7 +354,7 @@ namespace Valweed
             
             PieceManager.Instance.AddPiece(weedSeedPlant);
 
-            CustomPiece bong = new CustomPiece(bongPrefab,
+            CustomPiece bong = new CustomPiece(bongPrefab, true,
                 new PieceConfig
                 {
                     PieceTable = "Hammer",
