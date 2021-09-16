@@ -198,7 +198,7 @@ public class Bong : MonoBehaviour, Hoverable, Interactable
 		return m_name;
 	}
 
-	public bool Interact(Humanoid user, bool hold)
+	public bool Interact(Humanoid user, bool hold, bool alt)
 	{
 		if (hold)
 		{
