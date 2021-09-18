@@ -8,6 +8,7 @@ using Jotunn.Managers;
 using Jotunn.Utils;
 using System.Reflection;
 using UnityEngine;
+using HarmonyLib;
 
 namespace Valweed
 {
@@ -18,25 +19,14 @@ namespace Valweed
     {
         public const string PluginGUID = "com.drod917.Valweed";
         public const string PluginName = "Valweed";
-        public const string PluginVersion = "0.2.8";
+        public const string PluginVersion = "0.3.0";
 
-        // 0.2.8
-        // Update Jotunn dependency to 2.3.0
-
-        // 0.2.7
-        // Removed unnecessary code that caused errors in the coming Jotunn update.
-
-        // 0.2.6
-        // Fixed crashing on quit - Unloaded bundle issue
-
-        // 0.2.5 
-        // Fixed the console spam issue
-        // TODO: Console still gets spammed when joint status effect wears off and you move far fast
+        private Harmony harmony = new Harmony("com.drod917.Valweed");
 
         private AssetBundle jointResourceBundle;
         private AssetBundle plantResourceBundle;
         private AssetBundle bongResourceBundle;
-        AssetBundle spriteBundle;
+        private AssetBundle spriteBundle;
 
         private GameObject hybridJointPrefab;
         private GameObject indicaJointPrefab;
@@ -66,30 +56,107 @@ namespace Valweed
         private CustomStatusEffect sativaJointEffect;
         private CustomStatusEffect bongStatusEffect;
 
+        // Buff Settings
         private float jointHealthRegenVal;
         private float jointStamRegenVal;
         private float jointEffectTime;
         private float jointHealthRegenMult;
         private float jointStamRegenMult;
+        private bool cosmeticOnly;
+
+        // Yield Settings
+        private int seedGrowTime;
+        private int seedYield;
+        private int seedYieldBonus;
+        private float seedYieldBonusChance;
+        private int budGrowTime;
+        private int budYield;
+        private int budYieldBonus;
+        private float budYieldBonusChance;
 
         private void Awake()
         {
-            jointHealthRegenVal = Config.Bind<int>("Main Section", "Percent rate to increase health regen (Default 50 (+50%))", 50,
-                new ConfigDescription("Restart the game for this change to take effect.", new AcceptableValueRange<int>(0, 1000))).Value;
-
-            jointStamRegenVal = Config.Bind<int>("Main Section", "Percent rate to increase stamina regen (Default 100 (+100%))", 100, 
-                new ConfigDescription("Restart the game for this change to take effect.", new AcceptableValueRange<int>(0, 1000))).Value;
-
-            jointEffectTime = Config.Bind<int>("Main Section", "Effective time for smoking to last (Default 600s (10m))", 600,
-                new ConfigDescription("Restart the game for this change to take effect.", new AcceptableValueRange<int>(20, 3600))).Value;
-
-            jointHealthRegenMult = 1 + jointHealthRegenVal / 100;
-            jointStamRegenMult = 1 + jointStamRegenVal / 100;
-
+            initConfig();
             LoadAssets();
             AddStatusEffects();
             CreateItems();
             CreatePieces();
+            harmony.PatchAll(typeof(PlantHaveRoof));
+            harmony.PatchAll(typeof(PlayerCanConsumeItem));
+        }
+
+        private void initConfig()
+        {
+            Config.SaveOnConfigSet = true;
+
+            jointHealthRegenVal = Config.Bind("Buff Settings", "Joint Health Regen Rate", 50,
+                new ConfigDescription("Percent rate to increase health regen (Default 50 (+50%))",
+                new AcceptableValueRange<int>(0, 1000),
+                new ConfigurationManagerAttributes { IsAdminOnly = true }
+                )).Value;
+
+            jointStamRegenVal = Config.Bind("Buff Settings", "Joint Stamina Regen Rate", 100,
+                new ConfigDescription("Percent rate to increase stamina regen (Default 100 (+100%))",
+                new AcceptableValueRange<int>(0, 1000),
+                new ConfigurationManagerAttributes { IsAdminOnly = true }
+                )).Value;
+
+            jointEffectTime = Config.Bind("Buff Settings", "Joint Buff Duration", 600,
+                new ConfigDescription("Effective time for smoking to last (Default 600s (10m))",
+                new AcceptableValueRange<int>(20, 3600),
+                new ConfigurationManagerAttributes { IsAdminOnly = true }
+                )).Value;
+
+            cosmeticOnly = Config.Bind("Buff Settings", "Cosmetic Effects Only", false,
+                new ConfigDescription("Disables health and stamina regen modifiers. (Default Off)",
+                acceptableValues: null,
+                new ConfigurationManagerAttributes { IsAdminOnly = true }
+                )).Value;
+
+            seedGrowTime = Config.Bind("Yield Settings", "Seed Grow Time", 4000,
+                new ConfigDescription("Adjusts how long until seeds can be harvested. (Default 4000)",
+                new AcceptableValueRange<int>(10, 16000),
+                new ConfigurationManagerAttributes { IsAdminOnly = true }
+                )).Value;
+            seedYield = Config.Bind("Yield Settings", "Seed Yield", 2,
+                new ConfigDescription("Adjusts how many seeds are harvested. (Default 2)",
+                new AcceptableValueRange<int>(1, 99),
+                new ConfigurationManagerAttributes { IsAdminOnly = true }
+                )).Value;
+            seedYieldBonus = Config.Bind("Yield Settings", "Seed Yield Bonus", 1,
+                new ConfigDescription("Adjusts how many bonus seeds are harvested. (Default 1)",
+                new AcceptableValueRange<int>(1, 99),
+                new ConfigurationManagerAttributes { IsAdminOnly = true }
+                )).Value;
+            seedYieldBonusChance = Config.Bind("Yield Settings", "Seed Yield Bonus Chance", 75,
+                new ConfigDescription("Adjusts the chance to harvest bonus seeds. (Default 75%)",
+                new AcceptableValueRange<int>(1, 100),
+                new ConfigurationManagerAttributes { IsAdminOnly = true }
+                )).Value / 100f;
+
+            budGrowTime = Config.Bind("Yield Settings", "Bud Grow Time", 4000,
+                new ConfigDescription("Adjusts how long until buds can be harvested. (Default 4000)",
+                new AcceptableValueRange<int>(10, 16000),
+                new ConfigurationManagerAttributes { IsAdminOnly = true }
+                )).Value;
+            budYield = Config.Bind("Yield Settings", "Bud Yield", 1,
+                new ConfigDescription("Adjusts how many buds are harvested. (Default 1)",
+                new AcceptableValueRange<int>(1, 99),
+                new ConfigurationManagerAttributes { IsAdminOnly = true }
+                )).Value;
+            budYieldBonus = Config.Bind("Yield Settings", "Bud Yield Bonus", 2,
+                new ConfigDescription("Adjusts how many bonus buds are harvested. (Default 2)",
+                new AcceptableValueRange<int>(1, 99),
+                new ConfigurationManagerAttributes { IsAdminOnly = true }
+                )).Value;
+            budYieldBonusChance = Config.Bind("Yield Settings", "Bud Yield Bonus Chance", 75,
+                new ConfigDescription("Adjusts the chance to harvest bonus buds. (Default 75%)",
+                new AcceptableValueRange<int>(1, 100),
+                new ConfigurationManagerAttributes { IsAdminOnly = true }
+                )).Value / 100f;
+
+            jointHealthRegenMult = 1 + jointHealthRegenVal / 100;
+            jointStamRegenMult = 1 + jointStamRegenVal / 100;
         }
 
         private void Update()
@@ -102,21 +169,23 @@ namespace Valweed
             //Jotunn.Logger.LogInfo($"Embedded resources: {string.Join(",", Assembly.GetExecutingAssembly().GetManifestResourceNames())}");
             // Joint stuff
             jointResourceBundle = AssetUtils.LoadAssetBundleFromResources("joint", Assembly.GetExecutingAssembly());
-            hybridJointPrefab = jointResourceBundle.LoadAsset<GameObject>("joint_hybrid");
-            indicaJointPrefab = jointResourceBundle.LoadAsset<GameObject>("joint_indica");
-            sativaJointPrefab = jointResourceBundle.LoadAsset<GameObject>("joint_sativa");
-            weedPaperPrefab = jointResourceBundle.LoadAsset<GameObject>("joint_paper");
+            hybridJointPrefab = jointResourceBundle.LoadAsset<GameObject>("JointHybrid");
+            indicaJointPrefab = jointResourceBundle.LoadAsset<GameObject>("JointIndica");
+            sativaJointPrefab = jointResourceBundle.LoadAsset<GameObject>("JointSativa");
+            weedPaperPrefab = jointResourceBundle.LoadAsset<GameObject>("JointPaper");
             jointNoisePrefab = jointResourceBundle.LoadAsset<GameObject>("sfx_hit_joint");
 
             // Growable stuff
             plantResourceBundle = AssetUtils.LoadAssetBundleFromResources("plant", Assembly.GetExecutingAssembly());
             weedSaplingPrefab = plantResourceBundle.LoadAsset<GameObject>("sapling_weed");
             weedSeedSaplingPrefab = plantResourceBundle.LoadAsset<GameObject>("sapling_seedweed");
+
             pickableWeedPrefab = plantResourceBundle.LoadAsset<GameObject>("Pickable_WeedPlant");
             pickableSeedWeedPrefab = plantResourceBundle.LoadAsset<GameObject>("Pickable_SeedWeedPlant");
+
             // ItemDrop stuff
             weedNugsPrefab = plantResourceBundle.LoadAsset<GameObject>("WeedBuds");
-            weedSeedsPrefab = plantResourceBundle.LoadAsset<GameObject>("weed_seeds");
+            weedSeedsPrefab = plantResourceBundle.LoadAsset<GameObject>("WeedSeeds");
 
             bongResourceBundle = AssetUtils.LoadAssetBundleFromResources("bong", Assembly.GetExecutingAssembly());
             bongPrefab = bongResourceBundle.LoadAsset<GameObject>("Bong");
@@ -126,6 +195,23 @@ namespace Valweed
             bongSmokePrefab = bongResourceBundle.LoadAsset<GameObject>("vfx_bong_smoke");
             mouthSmokePrefab = bongResourceBundle.LoadAsset<GameObject>("vfx_mouth_smoke");
             bongMouthSmokePrefab = bongResourceBundle.LoadAsset<GameObject>("vfx_mouth_smoke_bong");
+
+            // Set drop rates according to config
+            weedSaplingPrefab.GetComponent<Plant>().m_growTime = budGrowTime;
+            weedSaplingPrefab.GetComponent<Plant>().m_growTimeMax = budGrowTime;
+            weedSaplingPrefab.GetComponent<Plant>().m_biome = (Heightmap.Biome)25;
+            pickableWeedPrefab.GetComponent<Pickable>().m_amount = budYield;
+            pickableWeedPrefab.GetComponent<Pickable>().m_extraDrops.m_dropMin = budYieldBonus;
+            pickableWeedPrefab.GetComponent<Pickable>().m_extraDrops.m_dropMax = budYieldBonus;
+            pickableWeedPrefab.GetComponent<Pickable>().m_extraDrops.m_dropChance = budYieldBonusChance;
+
+            weedSeedSaplingPrefab.GetComponent<Plant>().m_growTime = seedGrowTime;
+            weedSeedSaplingPrefab.GetComponent<Plant>().m_growTimeMax = seedGrowTime;
+            weedSeedSaplingPrefab.GetComponent<Plant>().m_biome = (Heightmap.Biome)25;
+            pickableSeedWeedPrefab.GetComponent<Pickable>().m_amount = seedYield;
+            pickableSeedWeedPrefab.GetComponent<Pickable>().m_extraDrops.m_dropMin = seedYieldBonus;
+            pickableSeedWeedPrefab.GetComponent<Pickable>().m_extraDrops.m_dropMax = seedYieldBonus;
+            pickableSeedWeedPrefab.GetComponent<Pickable>().m_extraDrops.m_dropChance = seedYieldBonusChance;
             
             PrefabManager.Instance.AddPrefab(pickableWeedPrefab);
             PrefabManager.Instance.AddPrefab(pickableSeedWeedPrefab);
@@ -182,9 +268,10 @@ namespace Valweed
 
             SE_Hybrid hybridEffect = ScriptableObject.CreateInstance<SE_Hybrid>();
             // Add config values
-            hybridEffect.healthRegenMult = jointHealthRegenMult;
-            hybridEffect.staminaRegenMult = jointStamRegenMult;
-            hybridEffect.ttl = jointEffectTime;
+            hybridEffect.healthRegenMult = cosmeticOnly ? 0 : jointHealthRegenMult;
+            hybridEffect.staminaRegenMult = cosmeticOnly ? 0 : jointStamRegenMult;
+            hybridEffect.ttl = cosmeticOnly ? 10 : jointEffectTime;
+            hybridEffect.cosmeticOnly = cosmeticOnly;
 
             hybridEffect.name = "HybridJointStatusEffect";
             hybridEffect.m_name = "$hybrid_joint_effectname";
@@ -193,16 +280,17 @@ namespace Valweed
             hybridEffect.m_startMessage = "$joint_effectstart";
             hybridEffect.m_stopMessageType = MessageHud.MessageType.Center;
             hybridEffect.m_stopMessage = "$joint_effectstop";
-            hybridEffect.m_tooltip = $"You feel balanced.";
+            hybridEffect.m_tooltip = "$hybrid_joint_tooltip";
             hybridEffect.m_startEffects.m_effectPrefabs = mouthEffects;
             hybridJointEffect = new CustomStatusEffect(hybridEffect, fixReference: false); 
             ItemManager.Instance.AddStatusEffect(hybridJointEffect);
 
             SE_Indica indicaEffect = ScriptableObject.CreateInstance<SE_Indica>();
             // Add config values
-            indicaEffect.healthRegenMult = jointHealthRegenMult;
-            indicaEffect.staminaRegenMult = jointStamRegenMult;
-            indicaEffect.ttl = jointEffectTime;
+            indicaEffect.healthRegenMult = cosmeticOnly ? 0 : jointHealthRegenMult;
+            indicaEffect.staminaRegenMult = cosmeticOnly ? 0 : jointStamRegenMult;
+            indicaEffect.ttl = cosmeticOnly ? 10 : jointEffectTime;
+            indicaEffect.cosmeticOnly = cosmeticOnly;
 
             indicaEffect.name = "IndicaJointStatusEffect";
             indicaEffect.m_name = "$indica_joint_effectname";
@@ -211,7 +299,7 @@ namespace Valweed
             indicaEffect.m_startMessage = "$joint_effectstart";
             indicaEffect.m_stopMessageType = MessageHud.MessageType.Center;
             indicaEffect.m_stopMessage = "$joint_effectstop";
-            indicaEffect.m_tooltip = $"You feel relaxed.\nMakes you Rested.\nIf you are already Rested, smoking will add {jointEffectTime / 60}m to the effect.";
+            indicaEffect.m_tooltip = "$indica_joint_tooltip";
             indicaEffect.m_startEffects.m_effectPrefabs = mouthEffects;
             indicaJointEffect = new CustomStatusEffect(indicaEffect, fixReference: false);
             ItemManager.Instance.AddStatusEffect(indicaJointEffect);
@@ -219,9 +307,10 @@ namespace Valweed
 
             SE_Sativa sativaEffect = ScriptableObject.CreateInstance<SE_Sativa>();
             // Add config values
-            sativaEffect.healthRegenMult = jointHealthRegenMult;
-            sativaEffect.staminaRegenMult = jointStamRegenMult;
-            sativaEffect.ttl = jointEffectTime;
+            sativaEffect.healthRegenMult = cosmeticOnly ? 0 : jointHealthRegenMult;
+            sativaEffect.staminaRegenMult = cosmeticOnly ? 0 : jointStamRegenMult;
+            sativaEffect.ttl = cosmeticOnly ? 10 : jointEffectTime;
+            sativaEffect.cosmeticOnly = cosmeticOnly;
 
             sativaEffect.name = "SativaJointStatusEffect";
             sativaEffect.m_name = "$sativa_joint_effectname";
@@ -230,16 +319,18 @@ namespace Valweed
             sativaEffect.m_startMessage = "$joint_effectstart";
             sativaEffect.m_stopMessageType = MessageHud.MessageType.Center;
             sativaEffect.m_stopMessage = "$joint_effectstop";
-            sativaEffect.m_tooltip = $"You feel motivated.\nHunger rate -50%";
+            sativaEffect.m_tooltip = "$sativa_joint_tooltip";
             sativaEffect.m_startEffects.m_effectPrefabs = mouthEffects;
             sativaJointEffect = new CustomStatusEffect(sativaEffect, fixReference: false);
             ItemManager.Instance.AddStatusEffect(sativaJointEffect);
 
             SE_Bong bongEffect = ScriptableObject.CreateInstance<SE_Bong>();
+
             // Add config values
             bongEffect.healthRegenMult = jointHealthRegenMult;
             bongEffect.staminaRegenMult = jointStamRegenMult;
             bongEffect.ttl = jointEffectTime * 3;
+            bongEffect.cosmeticOnly = cosmeticOnly;
 
             bongEffect.name = "BongStatusEffect";
             bongEffect.m_name = "$bong_effectname";
@@ -262,7 +353,7 @@ namespace Valweed
                     Amount = 1,
                     Requirements = new[]
                     {
-                        new RequirementConfig { Item = "joint_paper", Amount = 1 },
+                        new RequirementConfig { Item = "JointPaper", Amount = 1 },
                         new RequirementConfig { Item = "WeedBuds", Amount = 1 },
                         new RequirementConfig { Item = "Raspberry", Amount = 1 }
                     }
@@ -277,7 +368,7 @@ namespace Valweed
                     Amount = 1,
                     Requirements = new[]
                     {
-                        new RequirementConfig { Item = "joint_paper", Amount = 1 },
+                        new RequirementConfig { Item = "JointPaper", Amount = 1 },
                         new RequirementConfig { Item = "WeedBuds", Amount = 1 },
                         new RequirementConfig { Item = "Blueberries", Amount = 1 }
                     }
@@ -292,7 +383,7 @@ namespace Valweed
                     Amount = 1,
                     Requirements = new[]
                     {
-                        new RequirementConfig { Item = "joint_paper", Amount = 1 },
+                        new RequirementConfig { Item = "JointPaper", Amount = 1 },
                         new RequirementConfig { Item = "WeedBuds", Amount = 1 },
                         new RequirementConfig { Item = "Honey", Amount = 1 }
                     }
@@ -336,7 +427,7 @@ namespace Valweed
                     PieceTable = "Cultivator",
                     Requirements = new[]
                     {
-                        new RequirementConfig { Item = "weed_seeds", Amount = 1 }
+                        new RequirementConfig { Item = "WeedSeeds", Amount = 1 }
                     }
                 });
             
@@ -380,6 +471,7 @@ namespace Valweed
             bong.PiecePrefab.GetComponent<Bong>().m_checkTerrainOffset = 0;
             bong.PiecePrefab.GetComponent<Bong>().m_coverCheckOffset = 0;
             bong.PiecePrefab.GetComponent<Bong>().m_fuelItem = weedNugsPrefab.GetComponent<ItemDrop>();
+            bong.PiecePrefab.GetComponent<Bong>().cosmeticOnly = cosmeticOnly;
 
 
             // Bong noise/smoke update
@@ -400,13 +492,45 @@ namespace Valweed
             };
             bongEffects[0] = bongEffect;
             bongEffects[1] = bongSmoke;
-            bong.PiecePrefab.GetComponent<Bong>().m_fuelAddedEffects.m_effectPrefabs = bongEffects;
 
+            bong.PiecePrefab.GetComponent<Bong>().m_fuelAddedEffects.m_effectPrefabs = bongEffects;
             bong.Piece.GetComponent<Bong>().ttl = jointEffectTime / 2;
             bong.PiecePrefab.GetComponent<Piece>().m_onlyInBiome = (Heightmap.Biome)0;
-
-            
+      
             PieceManager.Instance.AddPiece(bong);
+        }
+
+        // Make plants growable indoors
+        [HarmonyPatch(typeof(Plant), "HaveRoof")]
+        public static class PlantHaveRoof
+        {
+            public static bool Prefix(Plant __instance, ref bool __result)
+            {
+                if (__instance.m_name == "$piece_sapling_weed" || __instance.m_name == "$piece_sapling_weed_seeds")
+                {
+                    __result = false;
+                    return false;
+                }
+                return true;
+            }
+        }
+
+        [HarmonyPatch(typeof(Player), "CanConsumeItem")]
+        public static class PlayerCanConsumeItem
+        {
+            public static bool Prefix(Player __instance, ref ItemDrop.ItemData item, ref bool __result)
+            {
+                if ((bool)item.m_shared.m_consumeStatusEffect)
+                {
+                    StatusEffect consumeStatusEffect = item.m_shared.m_consumeStatusEffect;
+                    if (item.m_shared.m_consumeStatusEffect.m_name.EndsWith("joint_effectname") && __instance.m_seman.HaveStatusEffect(item.m_shared.m_consumeStatusEffect.name) || __instance.m_seman.HaveStatusEffectCategory(consumeStatusEffect.m_category))
+                    {
+                        __result = true;
+                        return false;
+                    }
+                }
+                return true;
+            }    
         }
     }
 }

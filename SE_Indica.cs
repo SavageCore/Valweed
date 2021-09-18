@@ -7,10 +7,12 @@ public class SE_Indica : SE_Stats
     public float healthRegenMult;
     public float staminaRegenMult;
     public float ttl;
+    public bool cosmeticOnly;
 
     // Called when the status effect first begins
     public override void Setup(Character character)
     {
+        Jotunn.Logger.LogMessage("Call Setup");
         //base.Setup(character);
         // StatusEffect Setup without TriggerStartEffects()
         m_character = character;
@@ -34,30 +36,67 @@ public class SE_Indica : SE_Stats
             m_staminaOverTimeDuration = m_ttl;
         }
 
-        base.m_healthRegenMultiplier = healthRegenMult;
-        base.m_staminaRegenMultiplier = staminaRegenMult;
-        base.m_ttl = ttl;
+        base.m_healthRegenMultiplier = cosmeticOnly ? 1 : healthRegenMult;
+        base.m_staminaRegenMultiplier = cosmeticOnly ? 1 : staminaRegenMult;
+        base.m_ttl = cosmeticOnly ? 10 : ttl;
 
-        Player player = m_character as Player;
-        List<StatusEffect> statlist = player.GetSEMan().m_statusEffects;
-        bool isRested = false;
-        for (int i = 0; i < statlist.Count; i++)
+        if (!cosmeticOnly)
         {
-            if (statlist[i].GetType() == typeof(SE_Rested))
+            Player player = m_character as Player;
+            List<StatusEffect> statlist = player.GetSEMan().m_statusEffects;
+            bool isRested = false;
+            for (int i = 0; i < statlist.Count; i++)
             {
-                // Set the current rested max time to (max time - time elapsed + 10m) and reset timer
-                statlist[i].m_ttl = (statlist[i].m_ttl - statlist[i].m_time) + ttl;
-                statlist[i].m_time = 0;
-                isRested = true;
-                break;
+                if (statlist[i].GetType() == typeof(SE_Rested))
+                {
+                    // Player is Rested but not High(Indica)
+                    // Set the current rested max time to (max time - time elapsed + ttl) and reset timer
+                    // Adds ttl to the current Rested timer
+                    statlist[i].m_ttl = (statlist[i].m_ttl - statlist[i].m_time) + ttl;
+                    statlist[i].m_time = 0;
+                    isRested = true;
+                    break;
+                }
             }
+            if (!isRested)
+                player.m_seman.AddStatusEffect("Rested", true);
         }
-        if (!isRested)
-            player.m_seman.AddStatusEffect("Rested", true);
 
         float radius = m_character.GetRadius();
         m_startEffectInstances = m_startEffects.Create(m_character.m_head.transform.position, m_character.m_head.transform.rotation, m_character.m_head.transform, radius * 2f);
     }
+    public override void ResetTime()
+    {
+        Jotunn.Logger.LogMessage("Call ResetTime");
+        base.ResetTime();
+        float radius = m_character.GetRadius();
+
+        // Rested management on buff refresh
+        if (!cosmeticOnly)
+        {
+            Player player = m_character as Player;
+            List<StatusEffect> statlist = player.GetSEMan().m_statusEffects;
+            bool isRested = false;
+            for (int i = 0; i < statlist.Count; i++)
+            {
+                if (statlist[i].GetType() == typeof(SE_Rested))
+                {
+                    // Player is Rested and already High(Indica)
+                    // Set the current rested max time to (max time - time elapsed + (1/2 ttl)) and reset timer
+                    // Adds 1/2 of the initial buff time to the rested timer if refreshed.
+                    statlist[i].m_ttl = (statlist[i].m_ttl - statlist[i].m_time) + (ttl / 2);
+                    statlist[i].m_time = 0;
+                    isRested = true;
+                    break;
+                }
+            }
+            if (!isRested)
+                player.m_seman.AddStatusEffect("Rested", true);
+        }
+
+        m_startEffects.Create(m_character.m_head.transform.position, m_character.m_head.transform.rotation, m_character.m_head.transform, radius * 2f);
+    }
+
     public bool IsSitting()
     {
         return m_character.m_animator.GetCurrentAnimatorStateInfo(0).tagHash == Character.m_animatorTagSitting;

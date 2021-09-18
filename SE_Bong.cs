@@ -11,6 +11,7 @@ public class SE_Bong : SE_Stats
     public float healthRegenMult;
     public float staminaRegenMult;
     public float ttl;
+    public bool cosmeticOnly;
     private static Color defaultFogColor;
     private static Color defaultAmbientSkyColor;
     private static Color defaultAmbientLightColor;
@@ -42,10 +43,10 @@ public class SE_Bong : SE_Stats
             m_staminaOverTimeDuration = m_ttl;
         }
 
-        base.m_healthRegenMultiplier = healthRegenMult;
-        base.m_staminaRegenMultiplier = staminaRegenMult;
-        base.m_ttl = ttl;
-        
+        base.m_healthRegenMultiplier = cosmeticOnly ? 1 : healthRegenMult;
+        base.m_staminaRegenMultiplier = cosmeticOnly ? 1 : staminaRegenMult;
+        base.m_ttl = cosmeticOnly ? 20 : ttl;
+
         defaultAmbientLightColor = RenderSettings.ambientLight;
         defaultAmbientSkyColor = RenderSettings.ambientSkyColor;
         defaultAmbientIntensity = RenderSettings.ambientIntensity;

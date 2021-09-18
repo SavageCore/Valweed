@@ -5,6 +5,7 @@ public class SE_Hybrid : SE_Stats
     public float healthRegenMult;
     public float staminaRegenMult;
     public float ttl;
+    public bool cosmeticOnly;
     public EffectList my_effects = new EffectList();
 
     // Called when the status effect first begins
@@ -33,13 +34,20 @@ public class SE_Hybrid : SE_Stats
             m_staminaOverTimeDuration = m_ttl;
         }
 
-        base.m_healthRegenMultiplier = healthRegenMult;
-        base.m_staminaRegenMultiplier = staminaRegenMult;
-        base.m_ttl = ttl;
+        base.m_healthRegenMultiplier = cosmeticOnly ? 1 : healthRegenMult;
+        base.m_staminaRegenMultiplier = cosmeticOnly ? 1 : staminaRegenMult;
+        base.m_ttl = cosmeticOnly ? 10 : ttl;
 
         float radius = m_character.GetRadius();
         m_startEffectInstances = m_startEffects.Create(m_character.m_head.transform.position, m_character.m_head.transform.rotation, m_character.m_head.transform, radius * 2f);
     }
+    public override void ResetTime()
+    {
+        base.ResetTime();
+        float radius = m_character.GetRadius();
+        m_startEffects.Create(m_character.m_head.transform.position, m_character.m_head.transform.rotation, m_character.m_head.transform, radius * 2f);
+    }
+
     public bool IsSitting()
     {
         return m_character.m_animator.GetCurrentAnimatorStateInfo(0).tagHash == Character.m_animatorTagSitting;

@@ -1,6 +1,23 @@
 Grow your own weed farm! Roll up joints for smoke-able buffs! 
 Now with an immersive Bong!
 
+
+0.3.0
+-----
+Plants can now grow indoors.
+Configurable yields added.
+Buffs are now refreshable.
+Cosmetic-only toggle added.
+Server-side configuration sync enabled.
+Renamed prefabs to be in line with official conventions.
+Added tooltips to localization configs.
+
+Since buffs are now refreshable, the indica strain was reworked:
+    If you are not Rested or high (indica), smoking the indica joint makes you Rested.
+    If you are Rested but not high (indica), smoking the indica joint adds 10m to your Rested timer.
+    If you are Rested and high (indica), smoking the indica joint adds 5m to your Rested timer.
+
+
 0.2.8
 -----
 Hearth & Home compatibility update.
@@ -16,7 +33,6 @@ Removed unnecessary code that caused errors in the coming Jotunn update.
 Fixed crashing on quit due to unloaded assetbundles.
 
 
-
 0.2.5
 -----
 Fixed an issue that spammed the console when moving away from the smoke FX.
@@ -30,7 +46,6 @@ Smoke now emits from the mouth after the Bong is smoked.
 Smoke position has been fixed based on pose.
 
 
-
 0.2.3
 -----
 Smoke now emits from mouth when joints or the bong are smoked.
@@ -39,12 +54,10 @@ Weed nugs now show in the bowl when it is filled.
 More sound effects added.
 
 
-
 0.2.2
 -----
 Bong collider issue fixed. The Bong now sits flush with the surface it's built on.
 Bong / Joints / Bud textures updated.
-
 
 
 0.2.1
@@ -82,11 +95,9 @@ Thank you Zarboz for helping a lot with various issues throughout the life of th
 Bong sounds from Zapsplat.com
 
 
-
 0.1.1
 -----
 Reorganized folder structure to meet Thunderstore standards... ffs
-
 
 
 0.1.0
@@ -94,7 +105,6 @@ Reorganized folder structure to meet Thunderstore standards... ffs
 Fixed the lack of sounds when planting / harvesting.
 Customizable localizations added. This makes it easier, and quicker, for you to add your own translations.
 	To add a custom translation, modify the Translations/{Your language}/{language}.json or create your own.
-
 
 
 0.0.6
@@ -109,7 +119,6 @@ Fixed an issue where plant placement only worked in the Meadows.
 Fixed a typo in the Indica Joint description.
 
 More translations coming soon!
-
 
 
 0.0.5
@@ -129,13 +138,10 @@ Requires:
     HookGenPatcher
 
 
-
-
 Known Incompatibilities / Issues:
 
     There is currently no planting/growing/harvesting sound
     Loot sparkles have an orange tinge
-
 
 
 0.0.4
@@ -181,7 +187,6 @@ Requires:
     HookGenPatcher
 
 
-
 Known Incompatibilities / Issues:
 
     There is currently no planting/growing/harvesting sound
@@ -189,7 +194,6 @@ Known Incompatibilities / Issues:
 
 
 Thank you to RocketKitten5 & GraveBear for helping me fix the Joint Paper mesh's back-face culling issue!
-
 
 
 0.0.3
@@ -227,7 +231,6 @@ You're coming down.
 I'm not sure as to what the regional slang tends to be for each term, but I know it can vary a lot. I'd like to avoid translating "Joint" to "Hinge" or something lol
 
 
-
 0.0.2
 --------
 New strains added! Joints can now be hybrid, indica, or sativa.
@@ -260,7 +263,6 @@ Requires:
     HookGenPatcher
 
 
-
 Known Incompatibilities / Issues: None that I know of.
 
 TODO:
@@ -268,8 +270,6 @@ TODO:
     Smoking animation?
     Placeable bong for a longer duration buff on use
     Config file for adjustable rates
-
-
 
 
 0.0.1
