@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using BepInEx.Configuration;
+using BepInEx;
 
 public class Bong : MonoBehaviour, Hoverable, Interactable
 {
@@ -46,6 +48,8 @@ public class Bong : MonoBehaviour, Hoverable, Interactable
 	public GameObject m_fireworks;
 
 	public float ttl;
+
+	public bool cosmeticOnly;
 
 	private bool m_blocked;
 
@@ -214,9 +218,10 @@ public class Bong : MonoBehaviour, Hoverable, Interactable
 			Vector3 bongSmokePos = base.transform.position;
 			bongSmokePos.y += (float)1.65;
 
-			// Player has buds, bong is empty
+			// Player has buds
 			if (inventory.HaveItem(m_fuelItem.m_itemData.m_shared.m_name))
 			{
+				// Bong is filled already
 				if ((float)Mathf.CeilToInt(m_nview.GetZDO().GetFloat("fuel")) >= m_maxFuel)
 				{
 					user.Message(MessageHud.MessageType.Center, Localization.instance.Localize("$bong_effectstart", m_fuelItem.m_itemData.m_shared.m_name));
@@ -235,25 +240,29 @@ public class Bong : MonoBehaviour, Hoverable, Interactable
 					base.transform.Find("_enabled").gameObject.SetActive(false);
 
 					// Rested Management
-					Player player = user as Player;
-					List<StatusEffect> statlist = player.GetSEMan().m_statusEffects;
-					bool isRested = false;
-					for (int i = 0; i < statlist.Count; i++)
-					{
-						if (statlist[i].GetType() == typeof(SE_Rested))
+					if (!cosmeticOnly)
+                    {
+						Player player = user as Player;
+						List<StatusEffect> statlist = player.GetSEMan().m_statusEffects;
+						bool isRested = false;
+						for (int i = 0; i < statlist.Count; i++)
 						{
-                            // Set the current rested max time to (max time - time elapsed + 5m) and reset timer
-                            statlist[i].m_ttl = (statlist[i].m_ttl - statlist[i].m_time) + ttl;
-                            statlist[i].m_time = 0;
-                            isRested = true;
+							if (statlist[i].GetType() == typeof(SE_Rested))
+							{
+								// Set the current rested max time to (max time - time elapsed + 5m) and reset timer
+								statlist[i].m_ttl = (statlist[i].m_ttl - statlist[i].m_time) + ttl;
+								statlist[i].m_time = 0;
+								isRested = true;
 
-                            break;
+								break;
+							}
 						}
+						if (!isRested)
+							player.m_seman.AddStatusEffect("Rested", true);
 					}
-					if (!isRested)
-						player.m_seman.AddStatusEffect("Rested", true);
 					return true;
 				}
+				// Bong is empty
 				user.Message(MessageHud.MessageType.Center, Localization.instance.Localize("$bong_addbud", m_fuelItem.m_itemData.m_shared.m_name));
 				inventory.RemoveItem(m_fuelItem.m_itemData.m_shared.m_name, 1);
                 base.transform.Find("_enabled").gameObject.SetActive(true);
@@ -279,22 +288,25 @@ public class Bong : MonoBehaviour, Hoverable, Interactable
 				base.transform.Find("_enabled").gameObject.SetActive(false);
 
 				// Rested Management
-				Player player = user as Player;
-				List<StatusEffect> statlist = player.GetSEMan().m_statusEffects;
-				bool isRested = false;
-				for (int i = 0; i < statlist.Count; i++)
-				{
-					if (statlist[i].GetType() == typeof(SE_Rested))
+				if (!cosmeticOnly)
+                {
+					Player player = user as Player;
+					List<StatusEffect> statlist = player.GetSEMan().m_statusEffects;
+					bool isRested = false;
+					for (int i = 0; i < statlist.Count; i++)
 					{
-						// Set the current rested max time to (max time - time elapsed + 10m) and reset timer
-						statlist[i].m_ttl = (statlist[i].m_ttl - statlist[i].m_time) + ttl;
-						statlist[i].m_time = 0;
-						isRested = true;
-						break;
+						if (statlist[i].GetType() == typeof(SE_Rested))
+						{
+							// Set the current rested max time to (max time - time elapsed + 10m) and reset timer
+							statlist[i].m_ttl = (statlist[i].m_ttl - statlist[i].m_time) + ttl;
+							statlist[i].m_time = 0;
+							isRested = true;
+							break;
+						}
 					}
+					if (!isRested)
+						player.m_seman.AddStatusEffect("Rested", true);
 				}
-				if (!isRested)
-					player.m_seman.AddStatusEffect("Rested", true);
 				return true;
 			}
 			user.Message(MessageHud.MessageType.Center, "$msg_outof " + m_fuelItem.m_itemData.m_shared.m_name);

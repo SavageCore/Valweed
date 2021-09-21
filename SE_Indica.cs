@@ -4,15 +4,16 @@ using System.Collections.Generic;
 // Adds 10m to Rested buff. If not Rested, adds Rested.
 public class SE_Indica : SE_Stats
 {
-    public float healthRegenMult;
-    public float staminaRegenMult;
+    public int healthRegenVal;
+    public int staminaRegenVal;
+    private float healthRegenMult;
+    private float staminaRegenMult;
     public float ttl;
     public bool cosmeticOnly;
 
     // Called when the status effect first begins
     public override void Setup(Character character)
     {
-        Jotunn.Logger.LogMessage("Call Setup");
         //base.Setup(character);
         // StatusEffect Setup without TriggerStartEffects()
         m_character = character;
@@ -35,6 +36,9 @@ public class SE_Indica : SE_Stats
         {
             m_staminaOverTimeDuration = m_ttl;
         }
+
+        healthRegenMult = 1 + healthRegenVal / 100f;
+        staminaRegenMult = 1 + staminaRegenVal / 100f;
 
         base.m_healthRegenMultiplier = cosmeticOnly ? 1 : healthRegenMult;
         base.m_staminaRegenMultiplier = cosmeticOnly ? 1 : staminaRegenMult;
@@ -67,7 +71,6 @@ public class SE_Indica : SE_Stats
     }
     public override void ResetTime()
     {
-        Jotunn.Logger.LogMessage("Call ResetTime");
         base.ResetTime();
         float radius = m_character.GetRadius();
 

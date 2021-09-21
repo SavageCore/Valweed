@@ -9,6 +9,7 @@ using Jotunn.Utils;
 using System.Reflection;
 using UnityEngine;
 using HarmonyLib;
+using System;
 
 namespace Valweed
 {
@@ -19,7 +20,7 @@ namespace Valweed
     {
         public const string PluginGUID = "com.drod917.Valweed";
         public const string PluginName = "Valweed";
-        public const string PluginVersion = "0.3.0";
+        public const string PluginVersion = "0.3.2";
 
         private Harmony harmony = new Harmony("com.drod917.Valweed");
 
@@ -57,11 +58,9 @@ namespace Valweed
         private CustomStatusEffect bongStatusEffect;
 
         // Buff Settings
-        private float jointHealthRegenVal;
-        private float jointStamRegenVal;
+        private int jointHealthRegenVal;
+        private int jointStamRegenVal;
         private float jointEffectTime;
-        private float jointHealthRegenMult;
-        private float jointStamRegenMult;
         private bool cosmeticOnly;
 
         // Yield Settings
@@ -83,12 +82,13 @@ namespace Valweed
             CreatePieces();
             harmony.PatchAll(typeof(PlantHaveRoof));
             harmony.PatchAll(typeof(PlayerCanConsumeItem));
+
+            Config.SaveOnConfigSet = true;
+            Config.SettingChanged += (sender, args) => SettingChanged(Config, args);
         }
 
         private void initConfig()
         {
-            Config.SaveOnConfigSet = true;
-
             jointHealthRegenVal = Config.Bind("Buff Settings", "Joint Health Regen Rate", 50,
                 new ConfigDescription("Percent rate to increase health regen (Default 50 (+50%))",
                 new AcceptableValueRange<int>(0, 1000),
@@ -155,8 +155,79 @@ namespace Valweed
                 new ConfigurationManagerAttributes { IsAdminOnly = true }
                 )).Value / 100f;
 
-            jointHealthRegenMult = 1 + jointHealthRegenVal / 100;
-            jointStamRegenMult = 1 + jointStamRegenVal / 100;
+        }
+
+
+
+        private void SettingChanged(ConfigFile sender, SettingChangedEventArgs args)
+        {
+            initConfig();
+
+            string replaceString;
+
+            Bong bong = PrefabManager.Instance.GetPrefab("Bong").GetComponent<Bong>();
+            bong.cosmeticOnly = cosmeticOnly;
+
+            // RE-set drop rates according to config
+            Plant saplingWeed = PrefabManager.Instance.GetPrefab("sapling_weed").GetComponent<Plant>();
+            saplingWeed.m_growTime = budGrowTime;
+            saplingWeed.m_growTimeMax = budGrowTime;
+            saplingWeed.m_biome = (Heightmap.Biome)25;
+
+            Pickable pickableWeed = PrefabManager.Instance.GetPrefab("Pickable_WeedPlant").GetComponent<Pickable>();
+            pickableWeed.m_amount = budYield;
+            pickableWeed.m_extraDrops.m_dropMin = budYieldBonus;
+            pickableWeed.m_extraDrops.m_dropMax = budYieldBonus;
+            pickableWeed.m_extraDrops.m_dropChance = budYieldBonusChance;
+
+            Plant saplingWeedSeed = PrefabManager.Instance.GetPrefab("sapling_seedweed").GetComponent<Plant>();
+            saplingWeedSeed.m_growTime = seedGrowTime;
+            saplingWeedSeed.m_growTimeMax = seedGrowTime;
+            saplingWeedSeed.m_biome = (Heightmap.Biome)25;
+
+            Pickable pickableSeedWeed = PrefabManager.Instance.GetPrefab("Pickable_SeedWeedPlant").GetComponent<Pickable>();
+            pickableSeedWeed.m_amount = seedYield;
+            pickableSeedWeed.m_extraDrops.m_dropMin = seedYieldBonus;
+            pickableSeedWeed.m_extraDrops.m_dropMax = seedYieldBonus;
+            pickableSeedWeed.m_extraDrops.m_dropChance = seedYieldBonusChance;
+
+            //SE_Sativa seSativa = FindObjectOfType<SE_Sativa>();
+            SE_Sativa seSativa = ObjectDB.FindObjectOfType<SE_Sativa>();
+            seSativa.cosmeticOnly = cosmeticOnly;
+            seSativa.healthRegenVal = jointHealthRegenVal;
+            seSativa.staminaRegenVal = jointStamRegenVal;
+            seSativa.ttl = jointEffectTime;
+            replaceString = "$sativa_joint_tooltip";
+            string sativaJointTooltip = $"{replaceString}{(cosmeticOnly ? "" : "\n\nHunger Rate -50%")}";
+            seSativa.m_tooltip = sativaJointTooltip;
+
+            SE_Indica seIndica = ObjectDB.FindObjectOfType<SE_Indica>();
+            seIndica.cosmeticOnly = cosmeticOnly;
+            seIndica.healthRegenVal = jointHealthRegenVal;
+            seIndica.staminaRegenVal = jointStamRegenVal;
+            seIndica.ttl = jointEffectTime;
+            replaceString = "$indica_joint_tooltip";
+            string indicaJointTooltip = $"{replaceString}";
+            seIndica.m_tooltip = indicaJointTooltip;
+
+            SE_Hybrid seHybrid = ObjectDB.FindObjectOfType<SE_Hybrid>();
+            seHybrid.cosmeticOnly = cosmeticOnly;
+            seHybrid.healthRegenVal = jointHealthRegenVal;
+            seHybrid.staminaRegenVal = jointStamRegenVal;
+            seHybrid.ttl = jointEffectTime;
+            replaceString = "$hybrid_joint_tooltip";
+            string hybridJointTooltip = $"{replaceString}";
+            seHybrid.m_tooltip = hybridJointTooltip;
+
+            SE_Bong seBong = ObjectDB.FindObjectOfType<SE_Bong>();
+            seBong.cosmeticOnly = cosmeticOnly;
+            seBong.healthRegenVal = jointHealthRegenVal;
+            seBong.staminaRegenVal = jointStamRegenVal;
+            seBong.ttl = jointEffectTime * 3;
+            replaceString = "$bong_tooltip";
+            string bongTooltip = $"{replaceString}{(cosmeticOnly ? "" : "\nHunger Rate -50%")}";
+            seBong.m_tooltip = bongTooltip;
+
         }
 
         private void Update()
@@ -266,11 +337,13 @@ namespace Valweed
             if (statusIcon == null)
                 Jotunn.Logger.LogInfo("statusIcon NULL");
 
+            string replaceString;
+
             SE_Hybrid hybridEffect = ScriptableObject.CreateInstance<SE_Hybrid>();
             // Add config values
-            hybridEffect.healthRegenMult = cosmeticOnly ? 0 : jointHealthRegenMult;
-            hybridEffect.staminaRegenMult = cosmeticOnly ? 0 : jointStamRegenMult;
-            hybridEffect.ttl = cosmeticOnly ? 10 : jointEffectTime;
+            hybridEffect.healthRegenVal = jointHealthRegenVal;
+            hybridEffect.staminaRegenVal = jointStamRegenVal;
+            hybridEffect.ttl = jointEffectTime;
             hybridEffect.cosmeticOnly = cosmeticOnly;
 
             hybridEffect.name = "HybridJointStatusEffect";
@@ -280,16 +353,18 @@ namespace Valweed
             hybridEffect.m_startMessage = "$joint_effectstart";
             hybridEffect.m_stopMessageType = MessageHud.MessageType.Center;
             hybridEffect.m_stopMessage = "$joint_effectstop";
-            hybridEffect.m_tooltip = "$hybrid_joint_tooltip";
+            replaceString = "$hybrid_joint_tooltip";
+            string hybridJointTooltip = $"{replaceString}";
+            hybridEffect.m_tooltip = hybridJointTooltip;
             hybridEffect.m_startEffects.m_effectPrefabs = mouthEffects;
             hybridJointEffect = new CustomStatusEffect(hybridEffect, fixReference: false); 
             ItemManager.Instance.AddStatusEffect(hybridJointEffect);
 
             SE_Indica indicaEffect = ScriptableObject.CreateInstance<SE_Indica>();
             // Add config values
-            indicaEffect.healthRegenMult = cosmeticOnly ? 0 : jointHealthRegenMult;
-            indicaEffect.staminaRegenMult = cosmeticOnly ? 0 : jointStamRegenMult;
-            indicaEffect.ttl = cosmeticOnly ? 10 : jointEffectTime;
+            indicaEffect.healthRegenVal = jointHealthRegenVal;
+            indicaEffect.staminaRegenVal = jointStamRegenVal;
+            indicaEffect.ttl = jointEffectTime;
             indicaEffect.cosmeticOnly = cosmeticOnly;
 
             indicaEffect.name = "IndicaJointStatusEffect";
@@ -299,7 +374,9 @@ namespace Valweed
             indicaEffect.m_startMessage = "$joint_effectstart";
             indicaEffect.m_stopMessageType = MessageHud.MessageType.Center;
             indicaEffect.m_stopMessage = "$joint_effectstop";
-            indicaEffect.m_tooltip = "$indica_joint_tooltip";
+            replaceString = "$indica_joint_tooltip";
+            string indicaJointTooltip = $"{replaceString}";
+            indicaEffect.m_tooltip = indicaJointTooltip;
             indicaEffect.m_startEffects.m_effectPrefabs = mouthEffects;
             indicaJointEffect = new CustomStatusEffect(indicaEffect, fixReference: false);
             ItemManager.Instance.AddStatusEffect(indicaJointEffect);
@@ -307,9 +384,9 @@ namespace Valweed
 
             SE_Sativa sativaEffect = ScriptableObject.CreateInstance<SE_Sativa>();
             // Add config values
-            sativaEffect.healthRegenMult = cosmeticOnly ? 0 : jointHealthRegenMult;
-            sativaEffect.staminaRegenMult = cosmeticOnly ? 0 : jointStamRegenMult;
-            sativaEffect.ttl = cosmeticOnly ? 10 : jointEffectTime;
+            sativaEffect.healthRegenVal = jointHealthRegenVal;
+            sativaEffect.staminaRegenVal = jointStamRegenVal;
+            sativaEffect.ttl = jointEffectTime;
             sativaEffect.cosmeticOnly = cosmeticOnly;
 
             sativaEffect.name = "SativaJointStatusEffect";
@@ -319,7 +396,9 @@ namespace Valweed
             sativaEffect.m_startMessage = "$joint_effectstart";
             sativaEffect.m_stopMessageType = MessageHud.MessageType.Center;
             sativaEffect.m_stopMessage = "$joint_effectstop";
-            sativaEffect.m_tooltip = "$sativa_joint_tooltip";
+            replaceString = "$sativa_joint_tooltip";
+            string sativaJointTooltip = $"{replaceString}{(cosmeticOnly ? "" : "\n\nHunger Rate -50%")}";
+            sativaEffect.m_tooltip = sativaJointTooltip;
             sativaEffect.m_startEffects.m_effectPrefabs = mouthEffects;
             sativaJointEffect = new CustomStatusEffect(sativaEffect, fixReference: false);
             ItemManager.Instance.AddStatusEffect(sativaJointEffect);
@@ -327,8 +406,8 @@ namespace Valweed
             SE_Bong bongEffect = ScriptableObject.CreateInstance<SE_Bong>();
 
             // Add config values
-            bongEffect.healthRegenMult = jointHealthRegenMult;
-            bongEffect.staminaRegenMult = jointStamRegenMult;
+            bongEffect.healthRegenVal = jointHealthRegenVal;
+            bongEffect.staminaRegenVal = jointStamRegenVal;
             bongEffect.ttl = jointEffectTime * 3;
             bongEffect.cosmeticOnly = cosmeticOnly;
 
@@ -339,7 +418,9 @@ namespace Valweed
             bongEffect.m_startMessage = "$bong_effectstart";
             bongEffect.m_stopMessageType = MessageHud.MessageType.Center;
             bongEffect.m_stopMessage = "$joint_effectstop";
-            bongEffect.m_tooltip = $"You feel ZOOTED.\nAll three joint effects are combined.\nHunger rate -50%\nMakes you Rested.";
+            replaceString = "$bong_tooltip";
+            string bongTooltip = $"{replaceString}{(cosmeticOnly ? "" : "\nHunger Rate -50%")}";
+            bongEffect.m_tooltip = bongTooltip;
             bongEffect.m_startEffects.m_effectPrefabs = bongMouthEffects;
             bongStatusEffect = new CustomStatusEffect(bongEffect, fixReference: false);
             ItemManager.Instance.AddStatusEffect(bongStatusEffect);

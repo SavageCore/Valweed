@@ -2,6 +2,13 @@ Grow your own weed farm! Roll up joints for smoke-able buffs!
 Now with an immersive Bong!
 
 
+0.3.2
+-----
+Fixed folder hierarchy.
+Configurations can now be updated without restarting the game.
+Formatted tooltips.
+
+
 0.3.0
 -----
 Plants can now grow indoors.

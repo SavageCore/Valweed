@@ -2,8 +2,14 @@ using UnityEngine;
 
 public class SE_Hybrid : SE_Stats
 {
-    public float healthRegenMult;
-    public float staminaRegenMult;
+    public const string PluginGUID = "com.drod917.Valweed";
+    public const string PluginName = "Valweed";
+    public const string PluginVersion = "0.3.0";
+
+    public int healthRegenVal;
+    public int staminaRegenVal;
+    private float healthRegenMult;
+    private float staminaRegenMult;
     public float ttl;
     public bool cosmeticOnly;
     public EffectList my_effects = new EffectList();
@@ -33,6 +39,9 @@ public class SE_Hybrid : SE_Stats
         {
             m_staminaOverTimeDuration = m_ttl;
         }
+
+        healthRegenMult = 1 + healthRegenVal / 100f;
+        staminaRegenMult = 1 + staminaRegenVal / 100f;
 
         base.m_healthRegenMultiplier = cosmeticOnly ? 1 : healthRegenMult;
         base.m_staminaRegenMultiplier = cosmeticOnly ? 1 : staminaRegenMult;

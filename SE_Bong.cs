@@ -8,8 +8,10 @@ using UnityEngine;
 public class SE_Bong : SE_Stats
 {
     private Harmony harmony = new Harmony("com.drod917.Valweed.SEBong");
-    public float healthRegenMult;
-    public float staminaRegenMult;
+    public int healthRegenVal;
+    public int staminaRegenVal;
+    private float healthRegenMult;
+    private float staminaRegenMult;
     public float ttl;
     public bool cosmeticOnly;
     private static Color defaultFogColor;
@@ -42,6 +44,9 @@ public class SE_Bong : SE_Stats
         {
             m_staminaOverTimeDuration = m_ttl;
         }
+
+        healthRegenMult = 1 + healthRegenVal / 100f;
+        staminaRegenMult = 1 + staminaRegenVal / 100f;
 
         base.m_healthRegenMultiplier = cosmeticOnly ? 1 : healthRegenMult;
         base.m_staminaRegenMultiplier = cosmeticOnly ? 1 : staminaRegenMult;
