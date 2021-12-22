@@ -1,6 +1,10 @@
 Grow your own weed farm! Roll up joints for smoke-able buffs! 
 Now with an immersive Bong!
 
+0.3.3
+-----
+Updated BepinEx dependencies.
+
 
 0.3.2
 -----
