@@ -2,10 +2,6 @@ using UnityEngine;
 
 public class SE_Hybrid : SE_Stats
 {
-    public const string PluginGUID = "com.drod917.Valweed";
-    public const string PluginName = "Valweed";
-    public const string PluginVersion = "0.3.0";
-
     public int healthRegenVal;
     public int staminaRegenVal;
     private float healthRegenMult;
