@@ -2,6 +2,7 @@ Grow your own weed farm! Roll up joints for smoke-able buffs!
 Now with an immersive Bong!
 
 Nexus: https://www.nexusmods.com/valheim/mods/1023?tab=description
+
 Thunderstore: https://valheim.thunderstore.io/package/dannypacquiao/Valweed/
 
 0.3.3
