@@ -1,9 +1,9 @@
 ﻿{
   "name": "Valweed",
   "description": "Grow your own weed farm! Roll up joints for smoke-able buffs!",
-  "version_number": "0.3.3",
+  "version_number": "0.3.4",
   "website_url": "https://www.nexusmods.com/valheim/mods/1023/",
   "dependencies": [
-    "ValheimModding-Jotunn-2.4.3"
+    "ValheimModding-Jotunn-2.10.0"
   ]
 }
